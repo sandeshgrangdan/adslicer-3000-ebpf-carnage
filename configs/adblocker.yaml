@@ -1,0 +1,29 @@
+# ebpf-adblocker configuration.
+#
+# `interfaces` is the list of network interfaces to attach to.
+# Empty list -> auto-detect non-loopback "up" interfaces.
+#
+# Sources are fetched and merged into the kernel blocklist on startup
+# and again every `update_interval_hours`. Entries from `allowlist_file`
+# override blocklist entries (ALLOW flag wins).
+#
+# DoH/DoT mitigation: known DNS-over-HTTPS endpoints are listed in
+# `static_block` so they get blocked too, forcing apps back to plain
+# DNS we can actually inspect.
+
+interfaces: []
+allowlist_file: /etc/adblocker/allowlist.txt
+update_interval_hours: 24
+cleanup_interval_seconds: 60
+
+sources:
+  - { name: stevenblack-unified, url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts, format: hosts }
+  - { name: oisd-small,          url: https://small.oisd.nl/domainswild,                                format: domain }
+  - { name: easyprivacy,         url: https://easylist.to/easylist/easyprivacy.txt,                     format: adblock }
+
+static_block:
+  - dns.google
+  - cloudflare-dns.com
+  - mozilla.cloudflare-dns.com
+  - one.one.one.one
+  - dns.quad9.net

@@ -1,0 +1,7 @@
+# ebpf-adblocker allowlist.
+#
+# One domain per line. Entries here override the blocklist - they get
+# the ALLOW flag in the kernel map and matching packets pass through
+# even if a source list contains the same name.
+#
+# Inline comments after `#` are stripped. Empty lines are ignored.
