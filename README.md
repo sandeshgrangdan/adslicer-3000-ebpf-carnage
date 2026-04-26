@@ -57,6 +57,32 @@ verifier.
 - **[docs/TUI.md](docs/TUI.md)** — Ratatui-based interactive frontend
   (`adblocker-tui`) that manages the blocklist / allowlist / stats /
   events. Works locally on Linux or over `--ssh` from macOS.
+- **[docs/PRODUCTION.md](docs/PRODUCTION.md)** — operator's playbook:
+  fleet deployment, capacity planning, monitoring, hardening,
+  upgrades, troubleshooting.
+- **[docs/RELEASING.md](docs/RELEASING.md)** — for maintainers
+  cutting tagged releases.
+
+## Status
+
+[![ci](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/ci.yml/badge.svg)](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/ci.yml)
+[![security](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/security.yml/badge.svg)](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/security.yml)
+[![release](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/release.yml/badge.svg)](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/release.yml)
+[![license](https://img.shields.io/github/license/ebpf-adblocker/ebpf-adblocker)](LICENSE)
+[![go report](https://goreportcard.com/badge/github.com/ebpf-adblocker/ebpf-adblocker)](https://goreportcard.com/report/github.com/ebpf-adblocker/ebpf-adblocker)
+
+## Install (production)
+
+Pre-built `.deb` / `.rpm` / container images are published on every
+tag. See [docs/PRODUCTION.md → Installation methods](docs/PRODUCTION.md#2-installation-methods).
+TL;DR for Debian/Ubuntu amd64:
+
+```sh
+curl -L -o ebpf-adblocker.deb \
+  https://github.com/ebpf-adblocker/ebpf-adblocker/releases/latest/download/ebpf-adblocker_linux_amd64.deb
+sudo dpkg -i ebpf-adblocker.deb
+sudo systemctl enable --now adblocker
+```
 
 ## Build
 

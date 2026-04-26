@@ -21,6 +21,16 @@ INSTALL_BIN     ?= $(PREFIX)/bin
 INSTALL_ETC     ?= /etc/adblocker
 INSTALL_UNIT    ?= /etc/systemd/system
 
+# Version metadata baked into the binary by `make build`.
+VERSION         ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+COMMIT          ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
+DATE            ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
+PKG             := github.com/ebpf-adblocker/ebpf-adblocker/internal/version
+LDFLAGS         := -s -w \
+                   -X $(PKG).Version=$(VERSION) \
+                   -X $(PKG).Commit=$(COMMIT) \
+                   -X $(PKG).Date=$(DATE)
+
 .PHONY: all
 all: generate build
 
@@ -30,7 +40,7 @@ generate:
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 $(GO) build -trimpath -ldflags="-s -w" -o $(BIN) ./cmd/adblocker
+	CGO_ENABLED=0 $(GO) build -trimpath -ldflags="$(LDFLAGS)" -o $(BIN) ./cmd/adblocker
 
 .PHONY: vmlinux
 vmlinux:

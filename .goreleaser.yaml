@@ -1,0 +1,172 @@
+# GoReleaser config for ebpf-adblocker.
+# https://goreleaser.com/customization/
+#
+# Build matrix is intentionally narrow: linux/{amd64,arm64} only.
+# - The kernel program is Linux-only.
+# - bpf2go produces a single bpfel object that works across little-endian arches.
+
+version: 2
+
+project_name: ebpf-adblocker
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: adblockerctl
+    binary: adblockerctl
+    main: ./cmd/adblocker
+    env:
+      - CGO_ENABLED=0
+    goos: [linux]
+    goarch: [amd64, arm64]
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Version={{.Version}}
+      - -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Commit={{.Commit}}
+      - -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Date={{.Date}}
+
+archives:
+  - id: tar
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+      - configs/adblocker.yaml
+      - configs/allowlist.txt
+      - systemd/adblocker.service
+      - docs/*.md
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_SHA256SUMS"
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ .Tag }}-next"
+
+changelog:
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^chore:"
+      - "^style:"
+      - "^test:"
+      - "Merge pull request"
+
+# Linux distribution packages built from the produced binaries.
+nfpms:
+  - id: pkgs
+    package_name: ebpf-adblocker
+    vendor: ebpf-adblocker contributors
+    homepage: https://github.com/ebpf-adblocker/ebpf-adblocker
+    maintainer: ebpf-adblocker contributors <noreply@example.com>
+    description: |
+      System-wide eBPF ad/tracker blocker for Linux.
+      Drops outgoing DNS queries and TLS ClientHello packets destined for
+      blocked domains in the kernel. Works for every browser and every app
+      simultaneously, with no per-application config and no proxy.
+    license: MIT
+    formats: [deb, rpm]
+    bindir: /usr/local/bin
+    contents:
+      - src: configs/adblocker.yaml
+        dst: /etc/adblocker/adblocker.yaml
+        type: config|noreplace
+      - src: configs/allowlist.txt
+        dst: /etc/adblocker/allowlist.txt
+        type: config|noreplace
+      - src: systemd/adblocker.service
+        dst: /lib/systemd/system/adblocker.service
+      - src: README.md
+        dst: /usr/share/doc/ebpf-adblocker/README.md
+      - src: LICENSE
+        dst: /usr/share/doc/ebpf-adblocker/LICENSE
+      - src: docs/INSTALL.md
+        dst: /usr/share/doc/ebpf-adblocker/INSTALL.md
+      - src: docs/ARCHITECTURE.md
+        dst: /usr/share/doc/ebpf-adblocker/ARCHITECTURE.md
+    scripts:
+      postinstall: scripts/postinstall.sh
+      preremove: scripts/preremove.sh
+    overrides:
+      deb:
+        dependencies: []
+        recommends: [libbpf1]
+      rpm:
+        dependencies: []
+
+dockers:
+  - id: amd64
+    use: buildx
+    goos: linux
+    goarch: amd64
+    image_templates:
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-amd64"
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-amd64"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.description=System-wide eBPF ad/tracker blocker"
+      - "--label=org.opencontainers.image.url=https://github.com/ebpf-adblocker/ebpf-adblocker"
+      - "--label=org.opencontainers.image.source=https://github.com/ebpf-adblocker/ebpf-adblocker"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+      - "--label=org.opencontainers.image.created={{ .Date }}"
+    extra_files:
+      - configs/adblocker.yaml
+      - configs/allowlist.txt
+      - systemd/adblocker.service
+      - LICENSE
+
+  - id: arm64
+    use: buildx
+    goos: linux
+    goarch: arm64
+    image_templates:
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-arm64"
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-arm64"
+    dockerfile: Dockerfile
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title={{ .ProjectName }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+    extra_files:
+      - configs/adblocker.yaml
+      - configs/allowlist.txt
+      - systemd/adblocker.service
+      - LICENSE
+
+docker_manifests:
+  - name_template: "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-amd64"
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest"
+    image_templates:
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-amd64"
+      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-arm64"
+
+release:
+  github:
+    owner: ebpf-adblocker
+    name: ebpf-adblocker
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## ebpf-adblocker {{ .Tag }}
+
+    See [CHANGELOG.md](https://github.com/ebpf-adblocker/ebpf-adblocker/blob/{{ .Tag }}/CHANGELOG.md)
+    for details. Install instructions: [docs/INSTALL.md](https://github.com/ebpf-adblocker/ebpf-adblocker/blob/{{ .Tag }}/docs/INSTALL.md).
+  footer: |
+    ---
+    Container image: `ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Tag }}`

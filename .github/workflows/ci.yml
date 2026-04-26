@@ -1,0 +1,167 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GO_VERSION: "1.22"
+  RUST_VERSION: stable
+
+jobs:
+  go:
+    name: go ${{ matrix.go }} / lint+test+vet
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: ["1.21", "1.22"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
+
+      - name: go mod tidy (no diff)
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod go.sum
+
+      - name: vet
+        run: go vet ./...
+
+      - name: test
+        run: go test -race -count=1 -coverprofile=coverage.out ./...
+
+      - name: upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-go-${{ matrix.go }}
+          path: coverage.out
+          if-no-files-found: ignore
+
+      - name: golangci-lint
+        if: matrix.go == '1.22'
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.61
+          args: --timeout=5m
+
+  bpf-compile:
+    name: bpf compile (clang + bpf2go)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: install BPF toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang llvm libbpf-dev linux-tools-common \
+            linux-tools-generic linux-tools-$(uname -r) make
+          clang --version
+          llvm-strip --version
+          bpftool version || true
+
+      - name: install bpf2go
+        run: go install github.com/cilium/ebpf/cmd/bpf2go@latest
+
+      - name: regenerate vmlinux.h from runner kernel BTF
+        run: |
+          if [ -r /sys/kernel/btf/vmlinux ]; then
+            sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > bpf/vmlinux.h
+            head -3 bpf/vmlinux.h
+          else
+            echo "NOTE: runner kernel has no BTF; using checked-in placeholder vmlinux.h"
+          fi
+
+      - name: bpf2go compile
+        run: |
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          go generate ./...
+
+      - name: confirm artifacts exist
+        run: |
+          test -f internal/loader/adblocker_bpfel.go
+          test -f internal/loader/adblocker_bpfel.o
+          file internal/loader/adblocker_bpfel.o
+
+      - name: build userspace binary
+        run: |
+          CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" \
+            -o adblockerctl ./cmd/adblocker
+          ls -la adblockerctl
+          ./adblockerctl --help
+
+      - name: upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bpf-build
+          path: |
+            adblockerctl
+            internal/loader/adblocker_bpfel.o
+          if-no-files-found: error
+
+  rust:
+    name: rust / fmt+clippy+test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tui
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: tui
+
+      - name: fmt
+        run: cargo fmt --all -- --check
+
+      - name: clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      - name: test
+        run: cargo test --locked --all-targets
+
+      - name: build release
+        run: cargo build --release --locked
+
+      - name: upload tui binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: adblocker-tui-linux-amd64
+          path: tui/target/release/adblocker-tui
+          if-no-files-found: error
+
+  docs:
+    name: markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: "**/*.md"
+          config: .markdownlint.yaml

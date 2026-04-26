@@ -1,0 +1,44 @@
+name: Feature request
+description: Suggest a new feature or enhancement.
+title: "feat: <short summary>"
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Open an issue *before* opening a PR for non-trivial features.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the user-visible problem, not the implementation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution (optional)
+      description: How would you like this to work? Be concrete.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else did you think about? Why didn't they fit?
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Where does this live?
+      options:
+        - Kernel program (BPF C)
+        - Userspace daemon (Go)
+        - CLI command
+        - TUI (Rust)
+        - Documentation
+        - CI / release
+        - Not sure
+    validations:
+      required: true

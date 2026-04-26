@@ -1,0 +1,91 @@
+name: Bug report
+description: Something isn't working as documented.
+title: "bug: <short summary>"
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report. Please give us enough info
+        to reproduce locally - "doesn't work" issues without a repro are
+        usually closed.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Output of `adblockerctl --version`
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: input
+    id: kernel
+    attributes:
+      label: Kernel
+      description: Output of `uname -r`
+      placeholder: 6.5.0-21-generic
+    validations:
+      required: true
+
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution
+      placeholder: Ubuntu 24.04
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Install with `make install`
+        2. Run `sudo adblockerctl block example.com`
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior (with logs)
+      description: Include `journalctl -u adblocker -n 200 --no-pager` if applicable.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: bpf-logs
+    attributes:
+      label: BPF verifier output (if relevant)
+      description: Only if the daemon failed to start with a verifier error.
+      render: text
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Pre-flight
+      options:
+        - label: BTF is available (`ls /sys/kernel/btf/vmlinux` succeeds).
+          required: true
+        - label: Kernel is 5.15 or newer.
+          required: true
+        - label: I searched existing issues for duplicates.
+          required: true
