@@ -1,4 +1,4 @@
-# Contributing to ebpf-adblocker
+# Contributing to adblocker
 
 Thanks for considering a contribution. This project is small and the
 review bar is high — we'd rather have a few well-written changes than

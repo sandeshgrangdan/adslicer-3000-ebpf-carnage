@@ -1,4 +1,4 @@
-# Installation & usage — `ebpf-adblocker`
+# Installation & usage — `adblocker`
 
 This guide covers:
 
@@ -64,8 +64,8 @@ interface, not the Windows host's traffic.
 ### 3. Clone & build
 
 ```sh
-git clone https://github.com/<your-fork>/ebpf-adblocker.git
-cd ebpf-adblocker
+git clone https://github.com/<your-fork>/adblocker.git
+cd adblocker
 
 make deps           # installs bpf2go (one-time)
 make vmlinux        # writes bpf/vmlinux.h from the running kernel's BTF
@@ -107,9 +107,9 @@ sudo adblockerctl stats          # counters from the kernel
 If you just want to run a release tarball:
 
 ```sh
-curl -LO https://github.com/<your-fork>/ebpf-adblocker/releases/latest/download/ebpf-adblocker-linux-amd64.tar.gz
-tar xzf ebpf-adblocker-linux-amd64.tar.gz
-cd ebpf-adblocker-*
+curl -LO https://github.com/<your-fork>/adblocker/releases/latest/download/adblocker-linux-amd64.tar.gz
+tar xzf adblocker-linux-amd64.tar.gz
+cd adblocker-*
 
 sudo install -m 0755 adblockerctl /usr/local/bin/adblockerctl
 sudo install -d /etc/adblocker
@@ -161,8 +161,8 @@ but `daemon`, `block`, `stats`, etc. will fail at runtime with
 
 ```sh
 brew install go
-git clone https://github.com/<your-fork>/ebpf-adblocker.git
-cd ebpf-adblocker
+git clone https://github.com/<your-fork>/adblocker.git
+cd adblocker
 go build ./cmd/adblocker      # builds, but won't actually block on Mac
 ```
 

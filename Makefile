@@ -1,4 +1,4 @@
-# ebpf-adblocker Makefile
+# adblocker Makefile
 #
 # Targets:
 #   make            - generate + build
@@ -25,7 +25,7 @@ INSTALL_UNIT    ?= /etc/systemd/system
 VERSION         ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT          ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 DATE            ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
-PKG             := github.com/ebpf-adblocker/ebpf-adblocker/internal/version
+PKG             := github.com/adblocker/adblocker/internal/version
 LDFLAGS         := -s -w \
                    -X $(PKG).Version=$(VERSION) \
                    -X $(PKG).Commit=$(COMMIT) \

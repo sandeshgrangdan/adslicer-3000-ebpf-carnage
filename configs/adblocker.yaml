@@ -1,4 +1,4 @@
-# ebpf-adblocker configuration.
+# adblocker configuration.
 #
 # `interfaces` is the list of network interfaces to attach to.
 # Empty list -> auto-detect non-loopback "up" interfaces.

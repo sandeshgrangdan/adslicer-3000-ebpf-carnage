@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	UserAgent     = "ebpf-adblocker/1.0"
+	UserAgent     = "adblocker/1.0"
 	FetchTimeout  = 30 * time.Second
 	MaxBodyBytes  = 64 << 20 // 64 MiB
 )

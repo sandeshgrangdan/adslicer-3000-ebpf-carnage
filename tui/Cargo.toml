@@ -2,7 +2,7 @@
 name        = "adblocker-tui"
 version     = "0.1.0"
 edition     = "2021"
-description = "Ratatui-based TUI for ebpf-adblocker (manages blocklist, allowlist, stats, events)"
+description = "Ratatui-based TUI for adblocker (manages blocklist, allowlist, stats, events)"
 license     = "MIT"
 
 [[bin]]

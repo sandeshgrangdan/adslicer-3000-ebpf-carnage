@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ebpf-adblocker/ebpf-adblocker/internal/lists"
+	"github.com/adblocker/adblocker/internal/lists"
 	"gopkg.in/yaml.v3"
 )
 

@@ -1,4 +1,4 @@
-module github.com/ebpf-adblocker/ebpf-adblocker
+module github.com/adblocker/adblocker
 
 go 1.21.0
 

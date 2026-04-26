@@ -1,4 +1,4 @@
-# GoReleaser config for ebpf-adblocker.
+# GoReleaser config for adblocker.
 # https://goreleaser.com/customization/
 #
 # Build matrix is intentionally narrow: linux/{amd64,arm64} only.
@@ -7,7 +7,7 @@
 
 version: 2
 
-project_name: ebpf-adblocker
+project_name: adblocker
 
 before:
   hooks:
@@ -25,9 +25,9 @@ builds:
       - -trimpath
     ldflags:
       - -s -w
-      - -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Version={{.Version}}
-      - -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Commit={{.Commit}}
-      - -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Date={{.Date}}
+      - -X github.com/adblocker/adblocker/internal/version.Version={{.Version}}
+      - -X github.com/adblocker/adblocker/internal/version.Commit={{.Commit}}
+      - -X github.com/adblocker/adblocker/internal/version.Date={{.Date}}
 
 archives:
   - id: tar
@@ -62,10 +62,10 @@ changelog:
 # Linux distribution packages built from the produced binaries.
 nfpms:
   - id: pkgs
-    package_name: ebpf-adblocker
-    vendor: ebpf-adblocker contributors
-    homepage: https://github.com/ebpf-adblocker/ebpf-adblocker
-    maintainer: ebpf-adblocker contributors <noreply@example.com>
+    package_name: adblocker
+    vendor: adblocker contributors
+    homepage: https://github.com/adblocker/adblocker
+    maintainer: adblocker contributors <noreply@example.com>
     description: |
       System-wide eBPF ad/tracker blocker for Linux.
       Drops outgoing DNS queries and TLS ClientHello packets destined for
@@ -84,13 +84,13 @@ nfpms:
       - src: systemd/adblocker.service
         dst: /lib/systemd/system/adblocker.service
       - src: README.md
-        dst: /usr/share/doc/ebpf-adblocker/README.md
+        dst: /usr/share/doc/adblocker/README.md
       - src: LICENSE
-        dst: /usr/share/doc/ebpf-adblocker/LICENSE
+        dst: /usr/share/doc/adblocker/LICENSE
       - src: docs/INSTALL.md
-        dst: /usr/share/doc/ebpf-adblocker/INSTALL.md
+        dst: /usr/share/doc/adblocker/INSTALL.md
       - src: docs/ARCHITECTURE.md
-        dst: /usr/share/doc/ebpf-adblocker/ARCHITECTURE.md
+        dst: /usr/share/doc/adblocker/ARCHITECTURE.md
     scripts:
       postinstall: scripts/postinstall.sh
       preremove: scripts/preremove.sh
@@ -107,15 +107,15 @@ dockers:
     goos: linux
     goarch: amd64
     image_templates:
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-amd64"
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-amd64"
+      - "ghcr.io/adblocker/adblocker:{{ .Version }}-amd64"
+      - "ghcr.io/adblocker/adblocker:latest-amd64"
     dockerfile: Dockerfile
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description=System-wide eBPF ad/tracker blocker"
-      - "--label=org.opencontainers.image.url=https://github.com/ebpf-adblocker/ebpf-adblocker"
-      - "--label=org.opencontainers.image.source=https://github.com/ebpf-adblocker/ebpf-adblocker"
+      - "--label=org.opencontainers.image.url=https://github.com/adblocker/adblocker"
+      - "--label=org.opencontainers.image.source=https://github.com/adblocker/adblocker"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=MIT"
@@ -131,8 +131,8 @@ dockers:
     goos: linux
     goarch: arm64
     image_templates:
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-arm64"
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-arm64"
+      - "ghcr.io/adblocker/adblocker:{{ .Version }}-arm64"
+      - "ghcr.io/adblocker/adblocker:latest-arm64"
     dockerfile: Dockerfile
     build_flag_templates:
       - "--platform=linux/arm64"
@@ -146,27 +146,27 @@ dockers:
       - LICENSE
 
 docker_manifests:
-  - name_template: "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}"
+  - name_template: "ghcr.io/adblocker/adblocker:{{ .Version }}"
     image_templates:
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-amd64"
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest"
+      - "ghcr.io/adblocker/adblocker:{{ .Version }}-amd64"
+      - "ghcr.io/adblocker/adblocker:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/adblocker/adblocker:latest"
     image_templates:
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-amd64"
-      - "ghcr.io/ebpf-adblocker/ebpf-adblocker:latest-arm64"
+      - "ghcr.io/adblocker/adblocker:latest-amd64"
+      - "ghcr.io/adblocker/adblocker:latest-arm64"
 
 release:
   github:
-    owner: ebpf-adblocker
-    name: ebpf-adblocker
+    owner: adblocker
+    name: adblocker
   draft: false
   prerelease: auto
   mode: replace
   header: |
-    ## ebpf-adblocker {{ .Tag }}
+    ## adblocker {{ .Tag }}
 
-    See [CHANGELOG.md](https://github.com/ebpf-adblocker/ebpf-adblocker/blob/{{ .Tag }}/CHANGELOG.md)
-    for details. Install instructions: [docs/INSTALL.md](https://github.com/ebpf-adblocker/ebpf-adblocker/blob/{{ .Tag }}/docs/INSTALL.md).
+    See [CHANGELOG.md](https://github.com/adblocker/adblocker/blob/{{ .Tag }}/CHANGELOG.md)
+    for details. Install instructions: [docs/INSTALL.md](https://github.com/adblocker/adblocker/blob/{{ .Tag }}/docs/INSTALL.md).
   footer: |
     ---
-    Container image: `ghcr.io/ebpf-adblocker/ebpf-adblocker:{{ .Tag }}`
+    Container image: `ghcr.io/adblocker/adblocker:{{ .Tag }}`

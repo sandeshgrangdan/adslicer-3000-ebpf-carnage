@@ -1,7 +1,7 @@
 # `adblocker-tui` — terminal UI
 
 A [Ratatui](https://github.com/ratatui-org/ratatui)-based interactive
-frontend for `ebpf-adblocker`. Manage the kernel blocklist, allowlist,
+frontend for `adblocker`. Manage the kernel blocklist, allowlist,
 counters, and event stream from one screen, locally or over SSH.
 
 > The TUI never touches BPF maps directly. Every action shells out to
@@ -9,7 +9,7 @@ counters, and event stream from one screen, locally or over SSH.
 > you can do in the TUI you can also script from a shell.
 
 ```
-┌ ebpf-adblocker  ·  local ─────────────────────────────────────────────┐
+┌ adblocker  ·  local ─────────────────────────────────────────────┐
 │ Dashboard   Blocklist   Allowlist   Events                            │
 └───────────────────────────────────────────────────────────────────────┘
 ┌ counters ──────────────┐┌ summary ──────────────────────────────────┐

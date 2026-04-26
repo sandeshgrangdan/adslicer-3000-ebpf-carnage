@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"github.com/ebpf-adblocker/ebpf-adblocker/internal/loader"
+	"github.com/adblocker/adblocker/internal/loader"
 	"github.com/spf13/cobra"
 )
 

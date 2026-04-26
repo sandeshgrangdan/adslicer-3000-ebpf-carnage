@@ -1,4 +1,4 @@
-# Releasing `ebpf-adblocker`
+# Releasing `adblocker`
 
 Maintainer-only document. If you're not cutting a release, you can
 skip it.
@@ -38,13 +38,13 @@ cd tui && cargo test --locked && cargo clippy --all-targets --locked -- -D warni
 golangci-lint run ./...
 
 # CI green on main?
-# https://github.com/ebpf-adblocker/ebpf-adblocker/actions
+# https://github.com/adblocker/adblocker/actions
 
 # CHANGELOG.md has an entry under [Unreleased]?
 $EDITOR CHANGELOG.md
 
 # any open security advisories that should ride along?
-# https://github.com/ebpf-adblocker/ebpf-adblocker/security/advisories
+# https://github.com/adblocker/adblocker/security/advisories
 ```
 
 ## Cutting the tag
@@ -76,7 +76,7 @@ git push origin "${VER}"
    - cross-compiles `adblockerctl` for `linux/amd64` + `linux/arm64`
    - builds `.deb` and `.rpm` packages with nfpm
    - builds and pushes the multi-arch container image to
-     `ghcr.io/ebpf-adblocker/ebpf-adblocker:{vX.Y.Z, latest}`
+     `ghcr.io/adblocker/adblocker:{vX.Y.Z, latest}`
    - generates `SHA256SUMS`
    - publishes a GitHub Release with auto-generated notes
 5. **Rust matrix job** builds `adblocker-tui` for:
@@ -87,10 +87,10 @@ git push origin "${VER}"
 ### What you should see when it succeeds
 
 - A new Release at
-  `https://github.com/ebpf-adblocker/ebpf-adblocker/releases/tag/<VER>`
+  `https://github.com/adblocker/adblocker/releases/tag/<VER>`
   with: `.tar.gz` per arch, `.deb`, `.rpm`, `SHA256SUMS`, plus 4 TUI
   tarballs (linux x2, darwin x2).
-- A new image at `ghcr.io/ebpf-adblocker/ebpf-adblocker:<VER>` and
+- A new image at `ghcr.io/adblocker/adblocker:<VER>` and
   `:latest`, multi-arch (`docker manifest inspect` shows both).
 
 ## Post-release verification
@@ -98,18 +98,18 @@ git push origin "${VER}"
 ```sh
 # 1. Pull the package on a clean Linux box.
 curl -L -o ab.deb \
-  https://github.com/ebpf-adblocker/ebpf-adblocker/releases/download/${VER}/ebpf-adblocker_linux_amd64.deb
+  https://github.com/adblocker/adblocker/releases/download/${VER}/adblocker_linux_amd64.deb
 sudo dpkg -i ab.deb
 sudo systemctl enable --now adblocker
 adblockerctl --version       # confirms the right hash + tag
 
 # 2. Pull the container.
-docker pull ghcr.io/ebpf-adblocker/ebpf-adblocker:${VER}
-docker run --rm ghcr.io/ebpf-adblocker/ebpf-adblocker:${VER} --version
+docker pull ghcr.io/adblocker/adblocker:${VER}
+docker run --rm ghcr.io/adblocker/adblocker:${VER} --version
 
 # 3. Pull a TUI tarball.
 curl -L -o tui.tgz \
-  https://github.com/ebpf-adblocker/ebpf-adblocker/releases/download/${VER}/adblocker-tui-linux-amd64.tar.gz
+  https://github.com/adblocker/adblocker/releases/download/${VER}/adblocker-tui-linux-amd64.tar.gz
 tar xzf tui.tgz && ./adblocker-tui --version
 ```
 

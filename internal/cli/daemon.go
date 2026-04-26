@@ -15,9 +15,9 @@ import (
 
 	"github.com/cilium/ebpf"
 	"github.com/cilium/ebpf/ringbuf"
-	"github.com/ebpf-adblocker/ebpf-adblocker/internal/hash"
-	"github.com/ebpf-adblocker/ebpf-adblocker/internal/lists"
-	"github.com/ebpf-adblocker/ebpf-adblocker/internal/loader"
+	"github.com/adblocker/adblocker/internal/hash"
+	"github.com/adblocker/adblocker/internal/lists"
+	"github.com/adblocker/adblocker/internal/loader"
 	"github.com/spf13/cobra"
 )
 

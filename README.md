@@ -1,4 +1,4 @@
-# ebpf-adblocker
+# adblocker
 
 A system-wide eBPF ad/tracker blocker for Linux. Attaches to network
 interfaces and drops outgoing DNS queries and TLS ClientHello packets
@@ -14,7 +14,7 @@ certificate install.
 | `/etc/hosts`          | Resolver         | Static, no logic, no SNI            |
 | Pi-hole / NextDNS     | DNS server       | Bypassed by DoH/DoT/hardcoded IPs   |
 | AdGuard desktop       | Local MITM proxy | Needs root cert, breaks pinning     |
-| **ebpf-adblocker**    | Kernel packet    | No path-level/cosmetic; system-wide |
+| **adblocker**    | Kernel packet    | No path-level/cosmetic; system-wide |
 
 ## Architecture
 
@@ -65,11 +65,11 @@ verifier.
 
 ## Status
 
-[![ci](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/ci.yml/badge.svg)](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/ci.yml)
-[![security](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/security.yml/badge.svg)](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/security.yml)
-[![release](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/release.yml/badge.svg)](https://github.com/ebpf-adblocker/ebpf-adblocker/actions/workflows/release.yml)
-[![license](https://img.shields.io/github/license/ebpf-adblocker/ebpf-adblocker)](LICENSE)
-[![go report](https://goreportcard.com/badge/github.com/ebpf-adblocker/ebpf-adblocker)](https://goreportcard.com/report/github.com/ebpf-adblocker/ebpf-adblocker)
+[![ci](https://github.com/adblocker/adblocker/actions/workflows/ci.yml/badge.svg)](https://github.com/adblocker/adblocker/actions/workflows/ci.yml)
+[![security](https://github.com/adblocker/adblocker/actions/workflows/security.yml/badge.svg)](https://github.com/adblocker/adblocker/actions/workflows/security.yml)
+[![release](https://github.com/adblocker/adblocker/actions/workflows/release.yml/badge.svg)](https://github.com/adblocker/adblocker/actions/workflows/release.yml)
+[![license](https://img.shields.io/github/license/adblocker/adblocker)](LICENSE)
+[![go report](https://goreportcard.com/badge/github.com/adblocker/adblocker)](https://goreportcard.com/report/github.com/adblocker/adblocker)
 
 ## Install (production)
 
@@ -78,9 +78,9 @@ tag. See [docs/PRODUCTION.md → Installation methods](docs/PRODUCTION.md#2-inst
 TL;DR for Debian/Ubuntu amd64:
 
 ```sh
-curl -L -o ebpf-adblocker.deb \
-  https://github.com/ebpf-adblocker/ebpf-adblocker/releases/latest/download/ebpf-adblocker_linux_amd64.deb
-sudo dpkg -i ebpf-adblocker.deb
+curl -L -o adblocker.deb \
+  https://github.com/adblocker/adblocker/releases/latest/download/adblocker_linux_amd64.deb
+sudo dpkg -i adblocker.deb
 sudo systemctl enable --now adblocker
 ```
 

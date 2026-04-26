@@ -1,4 +1,4 @@
-# Architecture — `ebpf-adblocker`
+# Architecture — `adblocker`
 
 How the kernel programs, user-space daemon, CLI, and TUI fit together —
 from "browser opens a tab" all the way down to "kernel drops the
@@ -885,7 +885,7 @@ Source: `tui/src/backend.rs`, `tui/src/app.rs`, `tui/src/input.rs`.
 | **AdGuard for Mac/Win** | local MITM TLS proxy with their CA installed | URL paths, in-app traffic              | pinned-cert apps; needs root cert install; one bug = MITM your everything |
 | **PF / iptables / nftables** | packet filter                          | drop by IP, port, simple match         | no name-based matching; you maintain IP lists yourself                  |
 | **Little Snitch**     | per-app outbound firewall, manual rules       | new outbound connections, per-app      | tedious; doesn't help against sites you allow that then load ads        |
-| **`ebpf-adblocker`** *(this project)* | TC-egress + XDP-ingress BPF in kernel | DNS QNAME, TLS SNI, IP/CIDR — every app, no proxy, no cert | path-level (URL), in-page cosmetic, IPv6 (v1), TLS-1.3 ECH, multi-segment ClientHello |
+| **`adblocker`** *(this project)* | TC-egress + XDP-ingress BPF in kernel | DNS QNAME, TLS SNI, IP/CIDR — every app, no proxy, no cert | path-level (URL), in-page cosmetic, IPv6 (v1), TLS-1.3 ECH, multi-segment ClientHello |
 
 Where this project sits in the design space:
 
@@ -901,7 +901,7 @@ Where this project sits in the design space:
 
 In practice, the most useful combo is:
 
-- `ebpf-adblocker` to kill tracker + ad-network traffic system-wide
+- `adblocker` to kill tracker + ad-network traffic system-wide
 - `uBlock Origin` in the browser to clean up cosmetic remnants and
   block first-party ads served from the same hostname as the content
 

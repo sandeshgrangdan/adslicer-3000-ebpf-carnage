@@ -12,7 +12,7 @@
 package cli
 
 import (
-	"github.com/ebpf-adblocker/ebpf-adblocker/internal/version"
+	"github.com/adblocker/adblocker/internal/version"
 	"github.com/spf13/cobra"
 )
 

@@ -8,7 +8,7 @@ if command -v systemctl >/dev/null 2>&1; then
     if ! systemctl is-enabled --quiet adblocker.service; then
       cat <<'EOF'
 
-ebpf-adblocker installed. The systemd unit is NOT enabled by default.
+adblocker installed. The systemd unit is NOT enabled by default.
 Enable it with:
 
   sudo systemctl enable --now adblocker

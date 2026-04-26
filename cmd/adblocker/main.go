@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ebpf-adblocker/ebpf-adblocker/internal/cli"
+	"github.com/adblocker/adblocker/internal/cli"
 )
 
 func main() {

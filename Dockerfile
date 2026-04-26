@@ -1,4 +1,4 @@
-# Two-stage Dockerfile for ebpf-adblocker.
+# Two-stage Dockerfile for adblocker.
 #
 # Stage 1 builds the userspace binary (and runs bpf2go to compile the
 # kernel object). Stage 2 is a minimal runtime image. The container
@@ -6,14 +6,14 @@
 # /sys/fs/bpf mounted in - eBPF can't be sandboxed away.
 #
 # Build locally:
-#   docker build -t ebpf-adblocker:dev .
+#   docker build -t adblocker:dev .
 #
 # Run:
 #   docker run --rm --privileged --network=host \
 #     -v /sys/fs/bpf:/sys/fs/bpf \
 #     -v /sys/kernel/btf:/sys/kernel/btf:ro \
 #     -v "$PWD/configs:/etc/adblocker:ro" \
-#     ebpf-adblocker:dev daemon --config /etc/adblocker/adblocker.yaml
+#     adblocker:dev daemon --config /etc/adblocker/adblocker.yaml
 
 # ---------- builder ----------
 FROM golang:1.22-bookworm AS builder
@@ -31,9 +31,9 @@ COPY . .
 RUN go install github.com/cilium/ebpf/cmd/bpf2go@latest && \
     go generate ./... && \
     CGO_ENABLED=0 go build -trimpath -ldflags="-s -w \
-      -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Version=$(git describe --tags --always 2>/dev/null || echo dev) \
-      -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Commit=$(git rev-parse --short HEAD 2>/dev/null || echo none) \
-      -X github.com/ebpf-adblocker/ebpf-adblocker/internal/version.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+      -X github.com/adblocker/adblocker/internal/version.Version=$(git describe --tags --always 2>/dev/null || echo dev) \
+      -X github.com/adblocker/adblocker/internal/version.Commit=$(git rev-parse --short HEAD 2>/dev/null || echo none) \
+      -X github.com/adblocker/adblocker/internal/version.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
       -o /out/adblockerctl ./cmd/adblocker
 
 # ---------- runtime ----------
@@ -46,12 +46,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /out/adblockerctl /usr/local/bin/adblockerctl
 COPY configs/adblocker.yaml /etc/adblocker/adblocker.yaml
 COPY configs/allowlist.txt  /etc/adblocker/allowlist.txt
-COPY LICENSE                /usr/share/doc/ebpf-adblocker/LICENSE
+COPY LICENSE                /usr/share/doc/adblocker/LICENSE
 
 ENTRYPOINT ["/usr/local/bin/adblockerctl"]
 CMD ["daemon", "--config", "/etc/adblocker/adblocker.yaml"]
 
-LABEL org.opencontainers.image.title="ebpf-adblocker" \
+LABEL org.opencontainers.image.title="adblocker" \
       org.opencontainers.image.description="System-wide eBPF ad/tracker blocker" \
-      org.opencontainers.image.source="https://github.com/ebpf-adblocker/ebpf-adblocker" \
+      org.opencontainers.image.source="https://github.com/adblocker/adblocker" \
       org.opencontainers.image.licenses="MIT"

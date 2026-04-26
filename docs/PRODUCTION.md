@@ -1,4 +1,4 @@
-# Running `ebpf-adblocker` in production
+# Running `adblocker` in production
 
 This is the operator's playbook. If you're a single user installing
 on a laptop, [docs/INSTALL.md](INSTALL.md) is shorter and probably
@@ -78,15 +78,15 @@ In order of "what you should pick":
 
 ```sh
 # Debian/Ubuntu
-curl -L -o ebpf-adblocker.deb \
-  https://github.com/ebpf-adblocker/ebpf-adblocker/releases/latest/download/ebpf-adblocker_linux_amd64.deb
-sudo dpkg -i ebpf-adblocker.deb
+curl -L -o adblocker.deb \
+  https://github.com/adblocker/adblocker/releases/latest/download/adblocker_linux_amd64.deb
+sudo dpkg -i adblocker.deb
 sudo systemctl enable --now adblocker
 
 # Fedora/RHEL
-curl -L -o ebpf-adblocker.rpm \
-  https://github.com/ebpf-adblocker/ebpf-adblocker/releases/latest/download/ebpf-adblocker_linux_amd64.rpm
-sudo rpm -i ebpf-adblocker.rpm
+curl -L -o adblocker.rpm \
+  https://github.com/adblocker/adblocker/releases/latest/download/adblocker_linux_amd64.rpm
+sudo rpm -i adblocker.rpm
 sudo systemctl enable --now adblocker
 ```
 
@@ -101,7 +101,7 @@ to start it.
 VER=v0.1.0
 ARCH=$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')
 curl -L -o ab.tgz \
-  https://github.com/ebpf-adblocker/ebpf-adblocker/releases/download/${VER}/ebpf-adblocker_${VER#v}_linux_${ARCH}.tar.gz
+  https://github.com/adblocker/adblocker/releases/download/${VER}/adblocker_${VER#v}_linux_${ARCH}.tar.gz
 tar xzf ab.tgz
 sudo install -m 0755 adblockerctl /usr/local/bin/adblockerctl
 sudo install -d /etc/adblocker
@@ -117,7 +117,7 @@ docker run --rm --privileged --network=host \
   -v /sys/fs/bpf:/sys/fs/bpf \
   -v /sys/kernel/btf:/sys/kernel/btf:ro \
   -v "$PWD/configs:/etc/adblocker:ro" \
-  ghcr.io/ebpf-adblocker/ebpf-adblocker:latest
+  ghcr.io/adblocker/adblocker:latest
 ```
 
 > **Container caveat**: BPF programs need access to the host's
@@ -148,9 +148,9 @@ won't clobber operator edits.
 ### Ansible task example
 
 ```yaml
-- name: install ebpf-adblocker
+- name: install adblocker
   ansible.builtin.apt:
-    deb: "https://github.com/ebpf-adblocker/ebpf-adblocker/releases/download/{{ ab_version }}/ebpf-adblocker_linux_{{ ansible_architecture | regex_replace('x86_64','amd64') }}.deb"
+    deb: "https://github.com/adblocker/adblocker/releases/download/{{ ab_version }}/adblocker_linux_{{ ansible_architecture | regex_replace('x86_64','amd64') }}.deb"
     state: present
   notify: restart adblocker
 
@@ -267,7 +267,7 @@ groups:
         expr: time() - max_over_time(adblocker_pkts_seen[5m]) > 600
         for: 2m
         annotations:
-          summary: "ebpf-adblocker on {{ $labels.instance }} stopped seeing packets"
+          summary: "adblocker on {{ $labels.instance }} stopped seeing packets"
 
       - alert: AdblockerVerifierLoop
         expr: rate(systemd_unit_failed_total{name="adblocker.service"}[5m]) > 0
@@ -338,13 +338,13 @@ out of the box. Filter for the `adblocker.service` unit.
 
 ```sh
 # 1. Read CHANGELOG.md for breaking changes.
-curl -L https://github.com/ebpf-adblocker/ebpf-adblocker/raw/<new-tag>/CHANGELOG.md \
+curl -L https://github.com/adblocker/adblocker/raw/<new-tag>/CHANGELOG.md \
   | head -100
 
 # 2. Stage the new package on one host first.
-sudo apt install ./ebpf-adblocker_linux_amd64.deb        # in-place upgrade
+sudo apt install ./adblocker_linux_amd64.deb        # in-place upgrade
 # OR
-sudo dpkg -i ./ebpf-adblocker_linux_amd64.deb
+sudo dpkg -i ./adblocker_linux_amd64.deb
 
 # 3. Watch the unit come back up.
 sudo systemctl status adblocker
@@ -361,7 +361,7 @@ sudo adblockerctl --version                  # confirm new version
 
 ```sh
 # .deb
-sudo apt install ./ebpf-adblocker_linux_amd64.<previous-version>.deb
+sudo apt install ./adblocker_linux_amd64.<previous-version>.deb
 
 # binary
 sudo systemctl stop adblocker

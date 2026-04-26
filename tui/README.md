@@ -1,6 +1,6 @@
 # adblocker-tui
 
-A Ratatui-based TUI for [`ebpf-adblocker`](../README.md).
+A Ratatui-based TUI for [`adblocker`](../README.md).
 
 ```sh
 cargo build --release

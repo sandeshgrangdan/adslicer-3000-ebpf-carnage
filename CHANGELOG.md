@@ -38,4 +38,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `.deb` + `.rpm` + GHCR container image; Rust TUI built for
   `linux/{amd64,arm64}` + `darwin/{amd64,arm64}`.
 
-[Unreleased]: https://github.com/ebpf-adblocker/ebpf-adblocker/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/adblocker/adblocker/compare/v0.0.0...HEAD

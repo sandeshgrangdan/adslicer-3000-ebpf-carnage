@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/ebpf-adblocker/ebpf-adblocker/security/advisories/new
+    url: https://github.com/adblocker/adblocker/security/advisories/new
     about: Report a security issue privately. Do NOT open a public issue.
   - name: Question / discussion
-    url: https://github.com/ebpf-adblocker/ebpf-adblocker/discussions
+    url: https://github.com/adblocker/adblocker/discussions
     about: For "how do I..." questions, design discussions, etc.

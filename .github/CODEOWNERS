@@ -1,16 +1,16 @@
 # Default ownership - replace with your GitHub handle / team.
-*                       @ebpf-adblocker/maintainers
+*                       @adblocker/maintainers
 
 # Code areas
-/bpf/                   @ebpf-adblocker/kernel
-/internal/loader/       @ebpf-adblocker/kernel
-/internal/cli/          @ebpf-adblocker/userspace
-/internal/lists/        @ebpf-adblocker/userspace
-/tui/                   @ebpf-adblocker/tui
+/bpf/                   @adblocker/kernel
+/internal/loader/       @adblocker/kernel
+/internal/cli/          @adblocker/userspace
+/internal/lists/        @adblocker/userspace
+/tui/                   @adblocker/tui
 
 # Release & infra
-/.github/               @ebpf-adblocker/release
-/.goreleaser.yaml       @ebpf-adblocker/release
-/Dockerfile             @ebpf-adblocker/release
-/docs/RELEASING.md      @ebpf-adblocker/release
-/SECURITY.md            @ebpf-adblocker/security
+/.github/               @adblocker/release
+/.goreleaser.yaml       @adblocker/release
+/Dockerfile             @adblocker/release
+/docs/RELEASING.md      @adblocker/release
+/SECURITY.md            @adblocker/security
