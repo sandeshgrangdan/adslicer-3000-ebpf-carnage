@@ -69,7 +69,7 @@ func newTempBlockCmd() *cobra.Command {
 			if dur <= 0 {
 				return fmt.Errorf("duration must be positive")
 			}
-			expires := uint64(time.Now().Add(dur).UnixNano())
+			expires := uint64(time.Now().Add(dur).UnixNano()) //nolint:gosec // post-1970 timestamp
 			return setEntries([]string{d}, loader.FlagBlock|loader.FlagTemp, expires)
 		},
 	}

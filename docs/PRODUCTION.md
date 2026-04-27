@@ -30,7 +30,7 @@ Pick one. They're not mutually exclusive — you can mix.
 Install the daemon on every machine you want filtered. Each host
 filters its own traffic. Best for laptops, desktops, dev VMs.
 
-```
+```text
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
 │   laptop    │     │   laptop    │     │  workstation │
 │   (daemon)  │     │   (daemon)  │     │  (daemon)    │
@@ -47,7 +47,7 @@ operational toil; updating the YAML on 200 boxes is your problem.
 Install on the box that is the LAN's default route. All client
 traffic passes through it; one daemon protects every device.
 
-```
+```text
 [ phones, TVs, laptops ]──── LAN ────►[ gateway/router (daemon) ]──── WAN ──►
 ```
 
@@ -61,7 +61,7 @@ A roaming-friendly version of (1b): clients tunnel to a Linux box
 running WireGuard / OpenVPN, and that box runs the daemon. Useful
 when laptops travel.
 
-```
+```text
 [ laptop ] === wg-tunnel ===► [ VPS (wireguard + daemon) ]──── WAN ──►
 ```
 
@@ -305,7 +305,7 @@ systemctl is-active --quiet adblocker || exit 1
 
 ### Sample event line
 
-```
+```text
 2026-04-25 12:34:56.789012 BLOCK[DNS] 192.168.1.42 -> 8.8.8.8 (doubleclick.net)
 ```
 
@@ -314,7 +314,7 @@ systemctl is-active --quiet adblocker || exit 1
 Set `MaxRetentionSec=` and `SystemMaxUse=` in
 `/etc/systemd/journald.conf`:
 
-```
+```ini
 SystemMaxUse=2G
 MaxRetentionSec=2week
 ```
@@ -406,7 +406,7 @@ If a host is destroyed, recovery is: install package → restore
 
 The shipped systemd unit is already tight:
 
-```
+```ini
 AmbientCapabilities=CAP_BPF CAP_NET_ADMIN CAP_SYS_RESOURCE
 CapabilityBoundingSet=CAP_BPF CAP_NET_ADMIN CAP_SYS_RESOURCE
 NoNewPrivileges=true

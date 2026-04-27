@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial public release.
 - Kernel programs: TC egress + XDP ingress, attached on every non-loopback up
   interface; drops outbound DNS / TLS to blocklisted domains.

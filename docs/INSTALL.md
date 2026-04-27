@@ -229,7 +229,7 @@ One domain per line, `#` comments allowed. Entries here override the
 upstream blocklists — they get the `ALLOW` flag in the kernel map,
 which beats `BLOCK`.
 
-```
+```text
 # domains that must always pass, even if a feed lists them
 my-cdn.example.com
 internal.corp.example
@@ -332,7 +332,7 @@ sudo adblockerctl list
 
 Sample event line:
 
-```
+```text
 2026-04-25 12:34:56.789012 BLOCK[DNS] 192.168.1.42 -> 8.8.8.8 (doubleclick.net)
 ```
 

@@ -188,7 +188,7 @@ func expiryReaper(ctx context.Context, l *loader.Loader, interval time.Duration)
 		case <-ctx.Done():
 			return
 		case <-t.C:
-			now := uint64(time.Now().UnixNano())
+			now := uint64(time.Now().UnixNano()) //nolint:gosec // post-1970 timestamp
 			var (
 				key      uint64
 				entry    loader.DomainEntry
@@ -206,9 +206,9 @@ func expiryReaper(ctx context.Context, l *loader.Loader, interval time.Duration)
 				log.Printf("reaper iterate: %v", err)
 				continue
 			}
-			for _, k := range toDelete {
-				if err := l.Blocklist().Delete(&k); err != nil {
-					log.Printf("reaper delete %016x: %v", k, err)
+			for i := range toDelete {
+				if err := l.Blocklist().Delete(&toDelete[i]); err != nil {
+					log.Printf("reaper delete %016x: %v", toDelete[i], err)
 				}
 			}
 			if len(toDelete) > 0 {

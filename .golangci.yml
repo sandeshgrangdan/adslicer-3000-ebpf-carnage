@@ -39,3 +39,10 @@ issues:
       linters:
         - errcheck
         - gosec
+    # bpf2go-generated stubs/objects: field/type names mirror C symbols.
+    - path: internal/loader/adblocker_bpf(el|eb)\.go
+      linters:
+        - unused
+        - revive
+        - gosec
+        - staticcheck

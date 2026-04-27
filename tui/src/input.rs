@@ -253,7 +253,9 @@ fn parse_duration(s: &str) -> Result<Duration, String> {
         Some(_) => s.split_at(s.len() - 1),
         None => return Err("empty".into()),
     };
-    let n: u64 = num.parse().map_err(|_| format!("not a number: {:?}", num))?;
+    let n: u64 = num
+        .parse()
+        .map_err(|_| format!("not a number: {:?}", num))?;
     let secs = match unit {
         "s" => n,
         "m" => n * 60,

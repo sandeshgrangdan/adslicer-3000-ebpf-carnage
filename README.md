@@ -157,7 +157,7 @@ sudo adblockerctl unblock example.com
 
 ## Layout
 
-```
+```text
 bpf/                  # kernel C: TC egress + XDP ingress, parsers, maps
 cmd/adblocker/        # CLI entrypoint
 internal/loader/      # cilium/ebpf load+attach+pin lifecycle (bpf2go)

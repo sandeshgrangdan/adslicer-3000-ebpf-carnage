@@ -7,10 +7,10 @@
 //! TUI honest: anything you can do here you can also do from the
 //! command line.
 
-mod backend;
 mod app;
-mod ui;
+mod backend;
 mod input;
+mod ui;
 
 use anyhow::{Context, Result};
 use app::App;
@@ -55,8 +55,7 @@ fn main() -> Result<()> {
 
     enable_raw_mode().context("enable raw mode")?;
     let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)
-        .context("enter alt screen")?;
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture).context("enter alt screen")?;
     let term_backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(term_backend).context("init terminal")?;
 

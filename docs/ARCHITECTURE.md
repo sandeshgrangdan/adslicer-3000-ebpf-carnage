@@ -36,7 +36,7 @@ resolution → device transmit. We attach a BPF program to the
 **clsact** qdisc on egress so it sees every outbound packet *after*
 routing decisions but *before* it leaves the NIC.
 
-```
+```text
 ┌────────────┐     write(fd, "GET /...")
 │  browser   │─────────────────────────────────┐
 │  curl      │                                  │
@@ -95,7 +95,7 @@ of cheapness. The first match wins; nothing further is evaluated.
 
 ### Layer 1 — IP/CIDR backstop (LPM trie)
 
-```
+```text
 skb → Eth → IPv4 → look up ip->daddr in ip_blocklist (LPM)
            ├─ hit  → TC_ACT_SHOT, event reason=IP
            └─ miss ↓
@@ -112,7 +112,7 @@ Source: `bpf/adblocker.bpf.c:184-194`, `bpf/maps.h:60-72`.
 
 ### Layer 2 — DNS interception (UDP port 53)
 
-```
+```text
 skb → … → UDP → dport == 53?
                 ├─ no → next layer
                 └─ yes → parse_qname() → name + dot offsets
@@ -137,7 +137,7 @@ Source: `bpf/adblocker.bpf.c:103-126`, `bpf/parsers.h:74-126`.
 
 ### Layer 3 — TLS SNI inspection (TCP port 443)
 
-```
+```text
 skb → … → TCP → dport == 443 → payload starts with TLS Record Type 0x16?
                               ├─ no → pass
                               └─ yes → parse_sni() → server_name
@@ -189,7 +189,7 @@ FNV-1a hashes**. There are two hard requirements:
 
 FNV-1a 64 fits both:
 
-```
+```text
 offset = 0xcbf29ce484222325   # 14695981039346656037
 prime  = 0x100000001b3        # 1099511628211
 
@@ -239,7 +239,7 @@ A blocklist entry like `doubleclick.net` should match
 `pagead2.googlesyndication.doubleclick.net` too. We don't store every
 subdomain (that's combinatorial); instead the kernel walks suffixes:
 
-```
+```text
 Input QNAME: a.b.example.com   (length 13, dots at offsets 1, 3, 11)
 
 iter 0: hash("a.b.example.com")    → look up → miss
@@ -286,7 +286,7 @@ not deep subdomains, so the bound is invisible.
 `bpf/adblocker.bpf.c` compiles into a single ELF that contains two
 program sections:
 
-```
+```c
 SEC("tc")     int tc_egress(struct __sk_buff *skb) { … }
 SEC("xdp")    int xdp_ingress(struct xdp_md *ctx) { … }
 ```
@@ -308,7 +308,7 @@ via `link.AttachTCX(... ebpf.AttachTCXEgress)`. Verdicts:
 
 Pseudocode of the full program:
 
-```
+```text
 1.  parse Eth: must be IPv4 (IPv6 is v2 TODO)
 2.  parse IPv4 header (recheck data_end after IHL × 4)
 3.  IP backstop: LPM lookup ip->daddr → if hit, SHOT + emit event
@@ -346,7 +346,7 @@ mode is accepted by every driver but slower than native. We use
 generic because we only need the LPM lookup for dropping inbound
 replies from already-flagged IPs; the heavy lifting was on egress.
 
-```
+```text
 1.  parse Eth → IPv4
 2.  LPM lookup ip->saddr in `ip_blocklist`
 3.  hit → XDP_DROP + emit IP event
@@ -376,7 +376,7 @@ All four are pinned to `/sys/fs/bpf/adblocker/` so they survive the
 daemon restarting and so the CLI's `AttachExisting()` can open them
 without re-attaching programs.
 
-```
+```text
 /sys/fs/bpf/adblocker/
 ├── blocklist        BPF_MAP_TYPE_HASH         max=1<<20  key→value: u64 → domain_entry
 ├── ip_blocklist     BPF_MAP_TYPE_LPM_TRIE     max=1<<16  key→value: {pfx,addr} → u32
@@ -468,7 +468,7 @@ Source: `bpf/maps.h:36-46`, `internal/loader/loader.go:38-53`,
 
 ### Lifecycle
 
-```
+```text
 adblockerctl daemon --config /etc/adblocker/adblocker.yaml
         │
         ├─ rlimit.RemoveMemlock       (raise the BPF memory cap)
@@ -493,7 +493,7 @@ Source: `internal/loader/loader.go:55-118`, `internal/cli/daemon.go:42-98`.
 
 ### Goroutines
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │ daemon process                                                  │
 │                                                                 │
@@ -531,7 +531,7 @@ This is "how the blocklist is maintained" end to end. Same as
 Pi-hole and uBlock conceptually, but we do it once into a kernel
 map instead of into a DNS server's RPZ or a browser's filter table.
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────────┐
 │  /etc/adblocker/adblocker.yaml                                       │
 │                                                                      │
@@ -615,6 +615,7 @@ map instead of into a DNS server's RPZ or a browser's filter table.
 | `domain`  | `analytics.example.com`                  | (whole line, after stripping `#`)        |
 
 Skipped:
+
 - hosts: `localhost`, `broadcasthost`, `local`, `localhost.localdomain`, `ip6-*`
 - adblock: lines starting with `!`, `[`, `@@`, `##`
 - domain: empty lines and `#`-comments
@@ -628,6 +629,7 @@ Source: `internal/lists/lists.go:80-160`.
 ```
 
 Enforces:
+
 - 1..63 ASCII alnum chars per label
 - no leading or trailing hyphen
 - at least one dot (we reject TLD-only entries)
@@ -683,7 +685,7 @@ Source: `internal/cli/daemon.go:108-128`.
 
 Two-layer design because BPF can't compare wall-clock time.
 
-```
+```text
                            ┌────────────────────────────┐
 sudo adblockerctl  ──────▶ │ CLI: temp-block reddit.com │
        temp-block          │      2h                    │
@@ -731,7 +733,7 @@ Source: `internal/cli/daemon.go:172-208` (reaper),
 When the kernel drops a packet, it writes a `block_event` to the
 256 KiB ring buffer:
 
-```
+```text
 kernel: bpf_ringbuf_reserve(&events, sizeof(*e), 0)
         fill in ts_ns, hash, addrs, ports, reason, qname
         bpf_ringbuf_submit(e, 0)
@@ -757,7 +759,8 @@ The decoder reads fields at fixed offsets:
 | 36     | qname[128] |
 
 Sample log line:
-```
+
+```text
 2026-04-25 12:34:56.789012 BLOCK[DNS] 192.168.1.42 -> 8.8.8.8 (doubleclick.net)
 ```
 
@@ -777,7 +780,7 @@ Two clean modes, both backed by the same loader package.
 
 ### `daemon` mode — owns programs and maps
 
-```
+```text
 adblockerctl daemon
    │
    ▼
@@ -789,7 +792,7 @@ loader.New(ifaces)
 
 ### Every other subcommand — opens pinned maps only
 
-```
+```text
 adblockerctl block doubleclick.net
    │
    ▼
@@ -829,7 +832,7 @@ prompt for the cleartext for this reason.
 
 ## 11. TUI ↔ CLI
 
-```
+```text
 ┌──────────────────────┐    ┌────────────────┐
 │  adblocker-tui       │    │ adblockerctl   │
 │  (Rust + Ratatui)    │    │ (Go)           │

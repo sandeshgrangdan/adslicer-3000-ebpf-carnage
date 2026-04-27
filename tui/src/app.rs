@@ -50,7 +50,9 @@ pub enum InputMode {
     EditingBlock,
     /// Adding a new temp-block: the duration prompt comes after the domain.
     EditingTempDomain,
-    EditingTempDuration { domain: String },
+    EditingTempDuration {
+        domain: String,
+    },
     /// Adding to the allowlist.
     EditingAllow,
     /// Removing an entry by cleartext domain (the hash is one-way).
@@ -154,9 +156,7 @@ impl App {
         match self.mode {
             InputMode::Normal => input::handle_normal(self, k),
             InputMode::EditingBlock => input::handle_edit(self, k, EditTarget::Block),
-            InputMode::EditingTempDomain => {
-                input::handle_edit(self, k, EditTarget::TempDomain)
-            }
+            InputMode::EditingTempDomain => input::handle_edit(self, k, EditTarget::TempDomain),
             InputMode::EditingTempDuration { .. } => {
                 input::handle_edit(self, k, EditTarget::TempDuration)
             }

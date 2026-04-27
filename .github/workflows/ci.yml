@@ -74,8 +74,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            clang llvm libbpf-dev linux-tools-common \
-            linux-tools-generic linux-tools-$(uname -r) make
+            clang llvm libbpf-dev bpftool make
           clang --version
           llvm-strip --version
           bpftool version || true
@@ -85,11 +84,17 @@ jobs:
 
       - name: regenerate vmlinux.h from runner kernel BTF
         run: |
-          if [ -r /sys/kernel/btf/vmlinux ]; then
-            sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > bpf/vmlinux.h
-            head -3 bpf/vmlinux.h
+          if [ -r /sys/kernel/btf/vmlinux ] && command -v bpftool >/dev/null 2>&1; then
+            if sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > bpf/vmlinux.h.new 2>/dev/null \
+                 && [ -s bpf/vmlinux.h.new ]; then
+              mv bpf/vmlinux.h.new bpf/vmlinux.h
+              head -3 bpf/vmlinux.h
+            else
+              rm -f bpf/vmlinux.h.new
+              echo "NOTE: BTF dump produced no output; using checked-in placeholder vmlinux.h"
+            fi
           else
-            echo "NOTE: runner kernel has no BTF; using checked-in placeholder vmlinux.h"
+            echo "NOTE: bpftool/BTF unavailable on runner; using checked-in placeholder vmlinux.h"
           fi
 
       - name: bpf2go compile

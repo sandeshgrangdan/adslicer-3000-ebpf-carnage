@@ -38,14 +38,14 @@ impl Stats {
     }
 }
 
-/// One row of `adblockerctl list` output. The CLI gives us hash + flag
-/// + expiry; the original cleartext name is one-way-hashed and not
+/// One row of `adblockerctl list` output. The CLI gives us hash, flag,
+/// and expiry; the original cleartext name is one-way-hashed and not
 /// recoverable, but we display whatever the user typed via `block`
 /// during this TUI session in `entered_name` (best-effort cache).
 #[derive(Debug, Clone)]
 pub struct BlocklistEntry {
     pub hash: u64,
-    pub flags: String,   // "B", "BT", "A", etc.
+    pub flags: String, // "B", "BT", "A", etc.
     pub expires_at: Option<u64>,
 }
 
@@ -144,9 +144,7 @@ impl Backend {
                 continue;
             }
             let mut it = line.split_whitespace();
-            let (Some(hash_hex), Some(flags), expires) =
-                (it.next(), it.next(), it.next())
-            else {
+            let (Some(hash_hex), Some(flags), expires) = (it.next(), it.next(), it.next()) else {
                 continue;
             };
             let hash = match u64::from_str_radix(hash_hex, 16) {
@@ -180,7 +178,7 @@ impl Backend {
         // Render a Go time.Duration string (e.g. "2h" or "30m"). Round
         // to whole minutes so the spelling stays clean.
         let mins = dur.as_secs() / 60;
-        let spec = if mins % 60 == 0 && mins > 0 {
+        let spec = if mins > 0 && mins.is_multiple_of(60) {
             format!("{}h", mins / 60)
         } else {
             format!("{}m", mins.max(1))

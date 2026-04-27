@@ -6,8 +6,7 @@ use ratatui::{
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{
-        Block, Borders, Cell, Clear, List, ListItem, ListState, Paragraph, Row, Table,
-        Tabs, Wrap,
+        Block, Borders, Cell, Clear, List, ListItem, ListState, Paragraph, Row, Table, Tabs, Wrap,
     },
     Frame,
 };
@@ -38,10 +37,15 @@ pub fn draw(f: &mut Frame, app: &mut App) {
 }
 
 fn draw_tabs(f: &mut Frame, area: Rect, app: &App) {
-    let titles: Vec<Line> = [View::Dashboard, View::Blocklist, View::Allowlist, View::Events]
-        .iter()
-        .map(|v| Line::from(v.label()))
-        .collect();
+    let titles: Vec<Line> = [
+        View::Dashboard,
+        View::Blocklist,
+        View::Allowlist,
+        View::Events,
+    ]
+    .iter()
+    .map(|v| Line::from(v.label()))
+    .collect();
     let idx = match app.view {
         View::Dashboard => 0,
         View::Blocklist => 1,
@@ -94,8 +98,7 @@ fn draw_dashboard(f: &mut Frame, area: Rect, app: &App) {
         .collect();
     let table = Table::new(rows, [Constraint::Length(14), Constraint::Min(8)])
         .header(
-            Row::new(vec!["counter", "value"])
-                .style(Style::default().add_modifier(Modifier::BOLD)),
+            Row::new(vec!["counter", "value"]).style(Style::default().add_modifier(Modifier::BOLD)),
         )
         .block(Block::default().borders(Borders::ALL).title(" counters "));
     f.render_widget(table, cols[0]);
@@ -124,7 +127,10 @@ fn draw_dashboard(f: &mut Frame, area: Rect, app: &App) {
             "  blocklist size",
             Style::default().add_modifier(Modifier::BOLD),
         )),
-        Line::from(format!("    {} entries (capped at 50 in list view)", app.blocklist.len())),
+        Line::from(format!(
+            "    {} entries (capped at 50 in list view)",
+            app.blocklist.len()
+        )),
         Line::from(""),
         Line::from(Span::styled(
             "  shortcuts",
@@ -164,19 +170,18 @@ fn draw_blocklist(f: &mut Frame, area: Rect, app: &mut App) {
         Constraint::Length(7),
         Constraint::Min(12),
     ];
-    let table = Table::new(rows, widths)
-        .header(header)
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(" blocklist (first 50)  ·  [a] add  [t] temp-block  [d] unblock  [r] refresh "),
-        )
-        .highlight_style(
-            Style::default()
-                .bg(Color::DarkGray)
-                .add_modifier(Modifier::BOLD),
-        )
-        .highlight_symbol("> ");
+    let table =
+        Table::new(rows, widths)
+            .header(header)
+            .block(Block::default().borders(Borders::ALL).title(
+                " blocklist (first 50)  ·  [a] add  [t] temp-block  [d] unblock  [r] refresh ",
+            ))
+            .highlight_style(
+                Style::default()
+                    .bg(Color::DarkGray)
+                    .add_modifier(Modifier::BOLD),
+            )
+            .highlight_symbol("> ");
     let mut state = ratatui::widgets::TableState::default();
     state.select(Some(app.blocklist_cursor));
     f.render_stateful_widget(table, area, &mut state);
@@ -276,7 +281,10 @@ fn draw_help_overlay(f: &mut Frame, area: Rect) {
     f.render_widget(Clear, rect);
 
     let help_text = vec![
-        Line::from(Span::styled("  shortcuts", Style::default().add_modifier(Modifier::BOLD))),
+        Line::from(Span::styled(
+            "  shortcuts",
+            Style::default().add_modifier(Modifier::BOLD),
+        )),
         Line::from(""),
         Line::from("    Tab / →            next view"),
         Line::from("    Shift+Tab / ←      previous view"),
@@ -290,7 +298,10 @@ fn draw_help_overlay(f: &mut Frame, area: Rect) {
         Line::from("    ?  / F1            toggle this help"),
         Line::from("    q  / Ctrl-C        quit"),
         Line::from(""),
-        Line::from(Span::styled("  press any key to dismiss", Style::default().fg(Color::DarkGray))),
+        Line::from(Span::styled(
+            "  press any key to dismiss",
+            Style::default().fg(Color::DarkGray),
+        )),
     ];
     let p = Paragraph::new(help_text)
         .block(Block::default().borders(Borders::ALL).title(" help "))

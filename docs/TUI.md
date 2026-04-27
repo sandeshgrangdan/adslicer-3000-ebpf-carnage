@@ -8,7 +8,7 @@ counters, and event stream from one screen, locally or over SSH.
 > `adblockerctl` — the same binary the daemon and CLI use — so anything
 > you can do in the TUI you can also script from a shell.
 
-```
+```text
 ┌ adblocker  ·  local ─────────────────────────────────────────────┐
 │ Dashboard   Blocklist   Allowlist   Events                            │
 └───────────────────────────────────────────────────────────────────────┘
@@ -103,7 +103,7 @@ useful shortcuts.
 Scrollable table of the first 50 entries the kernel `blocklist` map
 exposes:
 
-```
+```text
 #    hash               flags  expires_at
 1    21bce4eea7c0f0d8   B      -
 2    85944171f73967e8   BT     1714123456789012345
@@ -246,6 +246,7 @@ Press `u`. Watch the Events tab for `[ok ] update: daemon restarted`.
 **`adblockerctl stats failed: sudo: a password is required`**
 You're running over SSH and the remote sudoers asks for a password
 non-interactively. Either:
+
 - Add a NOPASSWD rule for the user on `/usr/local/bin/adblockerctl`, or
 - Run `--no-sudo` and configure a polkit rule, or
 - SSH in as root (not recommended).

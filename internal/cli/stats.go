@@ -31,7 +31,7 @@ func newStatsCmd() *cobra.Command {
 
 			fmt.Printf("%-14s %s\n", "COUNTER", "VALUE")
 			for slot, name := range statNames {
-				k := uint32(slot)
+				k := uint32(slot) //nolint:gosec // bounded by len(statNames)
 				var perCPU []uint64
 				if err := l.Stats().Lookup(&k, &perCPU); err != nil {
 					fmt.Printf("%-14s ERR %v\n", name, err)
