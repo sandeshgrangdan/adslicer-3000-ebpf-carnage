@@ -2,8 +2,11 @@
 name        = "adblocker-tui"
 version     = "0.1.0"
 edition     = "2021"
-description = "Ratatui-based TUI for adblocker (manages blocklist, allowlist, stats, events)"
+description = "Ratatui-based TUI for the eBPF adblocker (manage blocklist, allowlist, stats, events)"
 license     = "MIT"
+repository  = "https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage"
+homepage    = "https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage"
+readme      = "../docs/TUI.md"
 
 [[bin]]
 name = "adblocker-tui"
@@ -22,3 +25,9 @@ opt-level = 3
 lto       = "thin"
 strip     = true
 codegen-units = 1
+
+# cargo-dist builds with this profile. Mirrors release with thin LTO so
+# behavior matches between local builds and shipped artifacts.
+[profile.dist]
+inherits = "release"
+lto      = "thin"

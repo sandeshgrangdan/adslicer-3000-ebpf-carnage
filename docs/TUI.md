@@ -1,145 +1,98 @@
 # `adblocker-tui` — terminal UI
 
-A [Ratatui](https://github.com/ratatui-org/ratatui)-based interactive
-frontend for `adblocker`. Manage the kernel blocklist, allowlist,
-counters, and event stream from one screen, locally or over SSH.
+A Ratatui-based frontend for the eBPF adblocker. From a single screen
+you can see live counters, browse the kernel blocklist, add /
+temp-block / unblock domains, manage allowlist entries, and trigger
+upstream list updates. The TUI shells out to `adblockerctl` for every
+action, so it works locally on the daemon host or remotely over SSH
+from any machine that can reach the host.
 
-> The TUI never touches BPF maps directly. Every action shells out to
-> `adblockerctl` — the same binary the daemon and CLI use — so anything
-> you can do in the TUI you can also script from a shell.
-
-```text
-┌ adblocker  ·  local ─────────────────────────────────────────────┐
-│ Dashboard   Blocklist   Allowlist   Events                            │
-└───────────────────────────────────────────────────────────────────────┘
-┌ counters ──────────────┐┌ summary ──────────────────────────────────┐
-│ counter      value     ││                                           │
-│ PKTS_SEEN    142,981   ││   blocked                                 │
-│ DNS_PARSED       472   ││     DNS  88    SNI  41    IP  3           │
-│ SNI_PARSED       219   ││                                           │
-│ BLOCKED_DNS       88   ││   share of seen packets                   │
-│ BLOCKED_SNI       41   ││     0.092%                                │
-│ BLOCKED_IP         3   ││                                           │
-│ PASSED       142,849   ││   blocklist size                          │
-└────────────────────────┘│     50 entries (capped at 50 in list view)│
-                          │                                           │
-                          │   shortcuts                               │
-                          │   [r] refresh  [u] update lists  [?] help │
-                          └───────────────────────────────────────────┘
-┌ block> doubleclick.net_ ──────────────────────────────────────────────┐
-│ type a domain to BLOCK, Enter to confirm, Esc to cancel               │
-└───────────────────────────────────────────────────────────────────────┘
-```
+The TUI itself is Linux-only. The daemon (kernel BPF programs) is also
+Linux-only — running the TUI on macOS or Windows is not supported.
 
 ---
 
 ## Install
 
-The TUI lives at [`tui/`](../tui/) inside this repo. It's a separate
-Rust crate with no Go dependency at runtime — you just need
-`adblockerctl` reachable on the target host.
+### One-line install (recommended)
 
-### Linux
-
-```sh
-# install the Rust toolchain if you don't have it
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-cd tui
-cargo build --release
-sudo install -m 0755 target/release/adblocker-tui /usr/local/bin/adblocker-tui
-```
-
-### macOS
+The release pipeline publishes a self-installing shell script on every
+tagged release. Pick the latest version from the
+[Releases page](https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases)
+and run:
 
 ```sh
-brew install rustup-init && rustup-init -y
-cd tui
-cargo build --release
-install -m 0755 target/release/adblocker-tui /usr/local/bin/adblocker-tui
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/latest/download/adblocker-tui-installer.sh \
+  | sh
 ```
 
-On macOS the TUI is only useful in **remote management mode** because
-eBPF doesn't exist on Darwin (see
-[INSTALL.md → macOS](INSTALL.md#macos--what-works-what-doesnt)).
-Run it pointing at a Linux box you control:
+The installer detects your architecture (`x86_64`/`aarch64`,
+`gnu`/`musl`), drops the binary into `$CARGO_HOME/bin` (default
+`~/.cargo/bin`), and writes a small updater so future versions can be
+fetched with `adblocker-tui --update`.
+
+If `~/.cargo/bin` isn't on your `$PATH`, add it:
 
 ```sh
-adblocker-tui --ssh user@linux-box.lan
+echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.profile
 ```
 
-The Linux box must have `adblockerctl` installed and a working daemon.
-Your SSH key needs to be configured for non-interactive auth — the
-TUI runs SSH with `BatchMode=yes` so it never prompts for a password.
+### Prebuilt tarball
+
+Download a tarball directly from the Releases page if you don't want
+the installer:
+
+```sh
+# pick the artifact for your arch+libc
+TARGET=x86_64-unknown-linux-gnu       # or aarch64-unknown-linux-gnu, x86_64-unknown-linux-musl
+curl -fsSL -o /tmp/adblocker-tui.tgz \
+  https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/latest/download/adblocker-tui-$TARGET.tar.gz
+tar -xzf /tmp/adblocker-tui.tgz -C /tmp
+sudo install -m 0755 /tmp/adblocker-tui-$TARGET/adblocker-tui /usr/local/bin/
+```
+
+### From source
+
+If you have a Rust toolchain (1.95+ stable):
+
+```sh
+git clone https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage
+cd adslicer-3000-ebpf-carnage/tui
+cargo install --path .
+# binary lands in ~/.cargo/bin/adblocker-tui
+```
 
 ---
 
 ## Run it
 
+The TUI assumes `adblockerctl` is reachable on the host where the daemon
+runs. Three usage modes:
+
 ```sh
-sudo adblocker-tui                        # local Linux, simplest case
-adblocker-tui --no-sudo                   # already root or have polkit rule
-adblocker-tui --ssh user@router.lan       # remote Linux box (works on macOS)
-adblocker-tui --refresh-ms 500            # snappier stats polling
-adblocker-tui --adblockerctl /opt/bin/adblockerctl    # custom binary path
+# Local (TUI + daemon on the same Linux box)
+sudo adblocker-tui
+
+# Local with passwordless adblockerctl (polkit or sudoers NOPASSWD rule)
+adblocker-tui --no-sudo
+
+# From a workstation, against a remote daemon over SSH
+adblocker-tui --ssh user@server.example
 ```
 
-The TUI clears the screen, takes over your terminal, and starts
-polling `adblockerctl stats` and `adblockerctl list` every
-`--refresh-ms` (default 1.5s).
+`--ssh` wraps every `adblockerctl` call in
+`ssh -o BatchMode=yes user@host`, so your SSH key must be configured for
+non-interactive auth. The daemon stays on the remote box; only the TUI
+runs locally.
 
----
+Common flags:
 
-## Views
-
-### 1. Dashboard
-
-Live counters (per-CPU sums across all 7 stat slots) and a quick
-summary: blocked-share-of-seen, current blocklist size, and the most
-useful shortcuts.
-
-### 2. Blocklist
-
-Scrollable table of the first 50 entries the kernel `blocklist` map
-exposes:
-
-```text
-#    hash               flags  expires_at
-1    21bce4eea7c0f0d8   B      -
-2    85944171f73967e8   BT     1714123456789012345
-3    7e96d1e9bf52a481   BA     -
+```sh
+adblocker-tui --refresh-ms 500                          # snappier polling (default 1500ms)
+adblocker-tui --adblockerctl /opt/bin/adblockerctl      # custom binary path
+adblocker-tui --update                                  # self-update via the cargo-dist updater
 ```
-
-Flags are a packed string:
-
-| char | meaning |
-| ---- | ------- |
-| `B`  | BLOCK   |
-| `A`  | ALLOW (overrides BLOCK) |
-| `T`  | TEMP (kernel-side hint; user-space reaper does the deletion) |
-
-> **Why hashes, not domains?** The kernel only stores FNV-1a 64 hashes
-> of the lowercase name — there is no reverse lookup. To unblock or
-> manage by name, type the cleartext into the prompt; the hash is
-> recomputed and the matching entry is removed.
-
-### 3. Allowlist
-
-Filtered view of entries with the `A` (ALLOW) flag set. Useful for
-seeing which domains you've explicitly whitelisted to override an
-upstream feed (e.g. `my-cdn.example.com`).
-
-### 4. Events
-
-Last few hundred messages produced by the TUI itself: actions you've
-taken, errors from `adblockerctl`, and update-list outcomes. Newest
-first. `[ok ]` lines are green, `[err]` lines are red.
-
-> The kernel emits a separate ringbuffer event stream
-> (`BLOCK[DNS] saddr -> daddr (qname)`) which the daemon logs to
-> `journalctl -u adblocker -f`. The TUI doesn't read that stream
-> today — open a second terminal and tail journalctl if you want
-> live block events.
 
 ---
 
@@ -163,7 +116,7 @@ first. `[ok ]` lines are green, `[err]` lines are red.
 | --- | ------ |
 | `↑` / `↓` (or `j`/`k`) | move highlight |
 | `a` | prompt to **add** a domain to the blocklist |
-| `t` | prompt to **temp-block** — first the domain, then duration (`30m`, `2h`, `1d`) |
+| `t` | prompt to **temp-block** (asks domain, then duration: `30m`, `2h`, `1d`) |
 | `d`, `Del`, `U` | prompt to **unblock** by cleartext name |
 
 ### Allowlist view
@@ -184,82 +137,79 @@ first. `[ok ]` lines are green, `[err]` lines are red.
 
 ---
 
-## Updating upstream blocklists
+## Updating
 
-Press **`u`** anywhere. The TUI invokes `adblockerctl update`, which
-restarts the daemon (so it re-fetches every source from
-`/etc/adblocker/adblocker.yaml`, parses, deduplicates, and bulk-loads
-into the kernel map in chunks of 4096).
-
-After ~10–30 seconds the new lists are in place — the dashboard
-counters keep ticking and the blocklist size will jump.
-
-To add or remove sources, edit the YAML directly and press `u` again:
-
-```yaml
-sources:
-  - { name: my-list, url: https://example.com/blocklist.txt, format: domain }
+```sh
+adblocker-tui --update
 ```
 
-Three formats are supported (see
-[INSTALL.md → Updating the upstream blocklists](INSTALL.md#updating-the-upstream-blocklists)).
+Pulls the latest release tarball for your platform, replaces the
+in-place binary, and exits. Powered by the cargo-dist self-updater that
+ships in every release.
 
----
+To pin to a specific version, just re-run the install one-liner against
+that version's URL:
 
-## Common workflows
-
-### Block a site for the afternoon
-
-1. Press `2` to jump to Blocklist
-2. Press `t`
-3. Type `gmail.com`, press `Enter`
-4. Type `4h`, press `Enter`
-
-The dashboard shows `BLOCKED_DNS` ticking up as soon as anyone on the
-machine tries to resolve gmail.com.
-
-### Unblock a domain
-
-1. Press `2` to jump to Blocklist
-2. Press `d` (or `U`)
-3. Type the cleartext name (e.g. `gmail.com`), press `Enter`
-
-The hash is one-way; the highlighted row's hex is informational only.
-
-### Override a feed false-positive
-
-1. Press `3` to jump to Allowlist
-2. Press `a`
-3. Type `my-cdn.example.com`, press `Enter`
-
-ALLOW beats BLOCK in the kernel program, so `my-cdn.example.com` will
-pass even if an upstream feed lists it.
-
-### Kick off a fresh fetch of upstream lists
-
-Press `u`. Watch the Events tab for `[ok ] update: daemon restarted`.
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf \
+  https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/download/v0.1.0/adblocker-tui-installer.sh \
+  | sh
+```
 
 ---
 
 ## Troubleshooting
 
+**`adblockerctl stats failed: open pinned map blocklist: no such file or directory (is the daemon running?)`**
+
+The daemon hasn't created the BPF map pins under `/sys/fs/bpf/adblocker/`.
+Either start it (`sudo systemctl start adblocker`) or check its logs
+(`journalctl -u adblocker -f`) — it may have failed to attach because
+the kernel lacks `CONFIG_DEBUG_INFO_BTF=y` or the `clsact` qdisc isn't
+available on the chosen interfaces.
+
 **`adblockerctl stats failed: sudo: a password is required`**
+
 You're running over SSH and the remote sudoers asks for a password
-non-interactively. Either:
+non-interactively. Three fixes:
 
 - Add a NOPASSWD rule for the user on `/usr/local/bin/adblockerctl`, or
-- Run `--no-sudo` and configure a polkit rule, or
+- Run with `--no-sudo` and configure a polkit rule allowing the user to
+  read the BPF maps, or
 - SSH in as root (not recommended).
 
-**`Connection refused` over `--ssh`**
-The remote must allow your key, `BatchMode=yes` is on. Test from the
-shell first: `ssh user@host adblockerctl stats`. If that fails, the
-TUI will fail too.
+**`Permission denied (publickey)` over `--ssh`**
 
-**Counters never change**
-Check `journalctl -u adblocker -f` on the daemon side. The daemon may
-have failed to attach — most often this is a kernel/BTF mismatch.
+The TUI runs SSH with `BatchMode=yes`, so password prompts are disabled.
+Test from a normal shell first:
 
-**The TUI froze**
-Press `Ctrl-C`. The terminal will be restored on exit (alt-screen
-leave + raw-mode disable + cursor show).
+```sh
+ssh user@host adblockerctl stats
+```
+
+If that fails, add your key to the remote's `~/.ssh/authorized_keys` (or
+configure `~/.ssh/config` with the right `IdentityFile`). Once that
+works, the TUI will work too.
+
+**`command not found: adblockerctl` on the daemon side**
+
+Either install the daemon binary (`sudo make install` from the source
+checkout) or point the TUI at the binary's path:
+
+```sh
+adblocker-tui --adblockerctl /opt/local/bin/adblockerctl
+```
+
+---
+
+## How it works (brief)
+
+The TUI never opens a BPF map directly. On every tick it spawns
+`adblockerctl stats` and `adblockerctl list`, parses the output, and
+redraws the screen. Mutations (`block`, `unblock`, `temp-block`,
+`allow`, `update`) all flow through the same CLI — anything you can do
+in the TUI you can also script from a shell.
+
+Architectural detail (state model, the four views, the SNI/DNS lookup
+flow on the kernel side, the `[d]` unblock-by-cleartext path) lives in
+[`docs/superpowers/specs/2026-04-28-tui-architecture.md`](superpowers/specs/2026-04-28-tui-architecture.md).

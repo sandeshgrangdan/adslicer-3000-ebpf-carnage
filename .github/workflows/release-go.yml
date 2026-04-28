@@ -1,0 +1,72 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to (re)release, e.g. v0.1.0"
+        required: true
+
+permissions:
+  contents: write          # for creating GitHub Releases
+  packages: write          # for pushing to GHCR
+  id-token: write          # for cosign keyless (optional)
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  goreleaser:
+    name: goreleaser (linux amd64+arm64, deb/rpm, ghcr image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # goreleaser needs full history for changelog
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      - name: install BPF toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang llvm libbpf-dev linux-tools-common \
+            linux-tools-generic linux-tools-$(uname -r) make
+          go install github.com/cilium/ebpf/cmd/bpf2go@latest
+
+      - name: regenerate vmlinux.h from runner BTF
+        run: |
+          if [ -r /sys/kernel/btf/vmlinux ]; then
+            sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > bpf/vmlinux.h
+          fi
+
+      - name: bpf2go (compile kernel object so it's embedded into the binary)
+        run: |
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          go generate ./...
+
+      - name: log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: goreleaser
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --clean ${{ github.event_name == 'workflow_dispatch' && '--snapshot' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
