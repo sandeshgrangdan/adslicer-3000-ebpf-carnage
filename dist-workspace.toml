@@ -20,4 +20,10 @@ install-updater = true
 # Don't try to create the GitHub Release - the goreleaser pipeline in
 # release-go.yml owns release creation. cargo-dist just uploads its
 # binaries / installer to the existing release.
+#
+# IMPORTANT: after running `cargo dist generate`, re-apply the manual
+# patch to .github/workflows/release.yml that adds a "wait for release
+# to be created by release-go.yml" step at the top of the `host` job.
+# Without it, cargo-dist races goreleaser and fails with "release not
+# found" when the host job runs before goreleaser finishes uploading.
 create-release = false

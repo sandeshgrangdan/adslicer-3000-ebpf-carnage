@@ -235,6 +235,26 @@ jobs:
           name: cargo-dist-cache
           path: ~/.cargo/bin/
       - run: chmod +x ~/.cargo/bin/dist
+      # NOTE (manual patch, preserve on regen): the goreleaser pipeline
+      # in release-go.yml owns release creation. cargo-dist runs in
+      # parallel and may reach this `host` job before goreleaser has
+      # finalized the release. Wait up to 5 minutes for the release to
+      # appear; if not, fail with a clear message.
+      - name: wait for release to be created by release-go.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          for i in $(seq 1 30); do
+            if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "release $TAG exists"
+              exit 0
+            fi
+            echo "release $TAG not yet created (attempt $i/30); sleeping 10s..."
+            sleep 10
+          done
+          echo "::error::release-go.yml did not create $TAG within 5 minutes"
+          exit 1
       # Fetch artifacts from scratch-storage
       - name: Fetch artifacts
         uses: actions/download-artifact@v4
