@@ -27,3 +27,7 @@ install-updater = true
 # Without it, cargo-dist races goreleaser and fails with "release not
 # found" when the host job runs before goreleaser finishes uploading.
 create-release = false
+# Permit our manual patch to .github/workflows/release.yml (the
+# wait-for-release step). Without this, cargo-dist's plan job rejects
+# any release.yml that diverges from what `dist generate` would emit.
+allow-dirty = ["ci"]
