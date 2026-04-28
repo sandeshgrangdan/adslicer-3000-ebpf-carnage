@@ -26,6 +26,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   time. The flat loop uses a single packet-pointer base with constant
   per-iteration offsets, which the verifier can prove. Output is
   byte-identical to the old implementation for any valid DNS query.
+- `bpf/parsers.h::fnv1a_lower(buf, len)` replaced with
+  `fnv1a_lower_substring(buf, buf_len, start, end)` and the suffix
+  walk in `blocklist_suffix_hit` updated accordingly. The old shape
+  passed `name + off` (a stack pointer with a runtime offset) into
+  the hash function; the verifier on Linux 6.8 rejected the
+  subsequent `buf[i]` deref with `invalid variable-offset read from
+  stack`. The new shape always indexes the full buffer with the
+  unrolled loop counter (constant offset per iteration) and uses
+  runtime `start`/`end` only to gate which iterations contribute.
+  Hash output is byte-identical to the old form for any input.
 
 ## [0.1.0] — 2026-04-27
 

@@ -10,13 +10,31 @@
 #define FNV1A_OFFSET 0xcbf29ce484222325ULL
 #define FNV1A_PRIME  0x100000001b3ULL
 
-static __always_inline __u64 fnv1a_lower(const char *buf, __u32 len)
+/*
+ * Hash buf[start..end) (lowercased) with FNV-1a 64. The strange
+ * shape — passing the full buffer plus runtime start/end gates
+ * instead of `(buf + off, sublen)` — is deliberate: it keeps every
+ * stack read at a constant per-iteration offset (`buf[i]` where `i`
+ * is the unrolled loop counter), which is the only kind of stack
+ * read the kernel verifier accepts on Linux 6.8+. A `(buf + off, n)`
+ * shape produces a stack pointer with `var_off` set, and any
+ * subsequent deref is rejected with `invalid variable-offset read
+ * from stack`. Output is byte-identical to the previous
+ * `fnv1a_lower(buf + off, n)` form for any valid input.
+ */
+static __always_inline __u64 fnv1a_lower_substring(const char *buf, __u32 buf_len,
+						   __u32 start, __u32 end)
 {
 	__u64 h = FNV1A_OFFSET;
 	#pragma unroll
 	for (int i = 0; i < MAX_QNAME; i++) {
-		if ((__u32)i >= len)
+		__u32 ui = (__u32)i;
+		if (ui >= buf_len)
 			break;
+		if (ui >= end)
+			break;
+		if (ui < start)
+			continue;
 		__u8 c = (__u8)buf[i];
 		if (c >= 'A' && c <= 'Z')
 			c += 32;
@@ -42,7 +60,7 @@ static __always_inline int blocklist_suffix_hit(const char *name,
 						struct domain_entry **out_entry)
 {
 	/* Full name first. */
-	__u64 h = fnv1a_lower(name, len);
+	__u64 h = fnv1a_lower_substring(name, len, 0, len);
 	struct domain_entry *e = bpf_map_lookup_elem(&blocklist, &h);
 	if (e) {
 		*out_hash = h;
@@ -61,7 +79,7 @@ static __always_inline int blocklist_suffix_hit(const char *name,
 		__u32 sublen = len - off;
 		if (sublen == 0 || sublen > MAX_QNAME)
 			break;
-		h = fnv1a_lower(name + off, sublen);
+		h = fnv1a_lower_substring(name, len, off, off + sublen);
 		e = bpf_map_lookup_elem(&blocklist, &h);
 		if (e) {
 			*out_hash = h;
