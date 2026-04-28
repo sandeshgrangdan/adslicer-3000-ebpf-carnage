@@ -99,6 +99,16 @@ cd tui && cargo build --release
 sudo install -m 0755 target/release/adblocker-tui /usr/local/bin/adblocker-tui
 ```
 
+Or grab the prebuilt TUI binary via the release installer (Linux only,
+auto-detects `x86_64`/`aarch64` and `gnu`/`musl`):
+
+```sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/latest/download/adblocker-tui-installer.sh | sh
+```
+
+See [docs/TUI.md](docs/TUI.md) for pinning to a specific version,
+tarball install, and remote (`--ssh`) usage.
+
 If `clang`, `bpftool`, or `make` are missing:
 
 | Distro         | Install                                                                     |

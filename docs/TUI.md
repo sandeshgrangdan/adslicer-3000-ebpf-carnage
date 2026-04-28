@@ -22,9 +22,7 @@ tagged release. Pick the latest version from the
 and run:
 
 ```sh
-curl --proto '=https' --tlsv1.2 -LsSf \
-  https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/latest/download/adblocker-tui-installer.sh \
-  | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/latest/download/adblocker-tui-installer.sh | sh
 ```
 
 The installer detects your architecture (`x86_64`/`aarch64`,
@@ -151,10 +149,10 @@ To pin to a specific version, just re-run the install one-liner against
 that version's URL:
 
 ```sh
-curl --proto '=https' --tlsv1.2 -LsSf \
-  https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/download/v0.1.0/adblocker-tui-installer.sh \
-  | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/download/v<TAG>/adblocker-tui-installer.sh | sh
 ```
+
+Replace `v<TAG>` with the version you want, e.g. `v0.1.1`.
 
 ---
 
