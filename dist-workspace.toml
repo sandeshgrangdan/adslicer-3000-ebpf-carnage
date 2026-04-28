@@ -17,3 +17,7 @@ unix-archive = ".tar.gz"
 install-path = "CARGO_HOME"
 # Whether to install an updater program
 install-updater = true
+# Don't try to create the GitHub Release - the goreleaser pipeline in
+# release-go.yml owns release creation. cargo-dist just uploads its
+# binaries / installer to the existing release.
+create-release = false
