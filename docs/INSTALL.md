@@ -1,5 +1,11 @@
 # Installation & usage — `adblocker`
 
+> **Running this on more than one host, in production, or behind an
+> on-call rotation?** Read [PRODUCTION.md](PRODUCTION.md) first — it
+> covers deployment topologies, capacity planning, monitoring,
+> hardening, and the upgrade/rollback playbook. This document is the
+> single-host install + everyday CLI guide.
+
 This guide covers:
 
 - [Linux install (build from source)](#linux-install-build-from-source)
