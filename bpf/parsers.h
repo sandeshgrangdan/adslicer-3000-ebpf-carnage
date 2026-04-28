@@ -189,11 +189,11 @@ static __always_inline int parse_sni(void *cur, void *data_end,
 
 	#pragma unroll
 	for (int i = 0; i < 16; i++) {
-		if ((void *)(p + 4) > ext_end) return -1;
+		if (p + 4 > ext_end) return -1;
 		__u16 etype = (__u16)((p[0] << 8) | p[1]);
 		__u16 elen  = (__u16)((p[2] << 8) | p[3]);
 		p += 4;
-		if ((void *)(p + elen) > ext_end) return -1;
+		if (p + elen > ext_end) return -1;
 
 		if (etype == 0x0000) {
 			/* server_name extension */

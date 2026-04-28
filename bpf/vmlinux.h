@@ -60,4 +60,44 @@ struct xdp_md {
 	__u32 egress_ifindex;
 };
 
+/* Network headers we parse. The real BTF-dumped vmlinux.h defines these
+ * too; in placeholder mode we provide layouts identical to the kernel's
+ * so the BPF source parses without BTF. */
+struct ethhdr {
+	__u8  h_dest[6];
+	__u8  h_source[6];
+	__be16 h_proto;
+};
+
+struct iphdr {
+	__u8 ihl: 4, version: 4;
+	__u8 tos;
+	__be16 tot_len;
+	__be16 id;
+	__be16 frag_off;
+	__u8 ttl;
+	__u8 protocol;
+	__sum16 check;
+	__be32 saddr;
+	__be32 daddr;
+};
+
+struct udphdr {
+	__be16 source;
+	__be16 dest;
+	__be16 len;
+	__sum16 check;
+};
+
+struct tcphdr {
+	__be16 source;
+	__be16 dest;
+	__be32 seq;
+	__be32 ack_seq;
+	__u16 res1: 4, doff: 4, fin: 1, syn: 1, rst: 1, psh: 1, ack: 1, urg: 1, ece: 1, cwr: 1;
+	__be16 window;
+	__sum16 check;
+	__be16 urg_ptr;
+};
+
 #endif /* __VMLINUX_H__ */
