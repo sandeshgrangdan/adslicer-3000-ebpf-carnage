@@ -16,6 +16,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `pointer arithmetic with it prohibited for !root`, even at UID 0.
   Surfaces as `adblocker.service: Failed with result 'exit-code'` on
   `systemctl start adblocker` (reported on Ubuntu 24).
+- `bpf/parsers.h::parse_qname` rewritten as a single MAX_QNAME-bounded
+  flat unroll over a state machine (length-byte vs content-byte)
+  instead of nested `MAX_LABELS × 63` loops. The old shape compiled
+  fine but the kernel verifier on Linux 6.8 lost per-pointer bounds
+  proofs through the inner unroll because clang created fresh
+  packet-pointer ids per iteration, causing `invalid access to
+  packet, off=N size=1, R4 offset is outside of the packet` at load
+  time. The flat loop uses a single packet-pointer base with constant
+  per-iteration offsets, which the verifier can prove. Output is
+  byte-identical to the old implementation for any valid DNS query.
 
 ## [0.1.0] — 2026-04-27
 

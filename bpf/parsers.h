@@ -77,52 +77,70 @@ static __always_inline int blocklist_suffix_hit(const char *name,
  * ending at `data_end`. Writes a flat lowercase dotted name (no
  * trailing dot) into `out`, returns its length, or -1 on malformed
  * input or compression pointers.
+ *
+ * Implementation: a single MAX_QNAME-bounded #pragma unroll loop
+ * driving a tiny state machine (length-byte vs content-byte). Every
+ * iteration does an adjacent (base + i + 1) <= data_end bounds check
+ * and a base[i] read off a single packet-pointer base. This shape
+ * keeps every access provable to the kernel verifier on Linux 6.8+,
+ * which loses bounds proofs through nested label-then-body unrolls
+ * because clang creates fresh packet-pointer ids per inner-loop
+ * iteration.
  */
 static __always_inline int parse_qname(void *cur, void *data_end,
 				       char *out, __u32 out_cap,
 				       __u8 *dots, __u32 *n_dots_out)
 {
+	__u8 *base = cur;
 	__u32 written = 0;
 	__u32 n_dots = 0;
-	__u8 *p = cur;
+	__u32 labels_seen = 0;
+	__u32 remaining = 0;   /* content bytes left to read in the current label */
+	__u8 need_dot = 0;     /* set after a label so we emit '.' before the next label's body */
 
 	#pragma unroll
-	for (int label = 0; label < MAX_LABELS; label++) {
-		if ((void *)(p + 1) > data_end)
+	for (int i = 0; i < MAX_QNAME; i++) {
+		if ((void *)(base + i + 1) > data_end)
 			return -1;
-		__u8 ll = *p++;
-		if (ll == 0) {
-			*n_dots_out = n_dots;
-			return (int)written;
-		}
-		/* Compression pointers shouldn't appear in queries; bail. */
-		if ((ll & 0xC0) != 0)
-			return -1;
-		if (ll > 63)
-			return -1;
-		if (label > 0) {
+		__u8 b = base[i];
+
+		if (remaining == 0) {
+			/* length byte (or terminator) */
+			if (b == 0) {
+				*n_dots_out = n_dots;
+				return (int)written;
+			}
+			/* compression pointers (top 2 bits set) shouldn't appear in queries */
+			if ((b & 0xC0) != 0)
+				return -1;
+			if (b > 63)
+				return -1;
+			/* preserve the original cap of MAX_LABELS - 1 non-empty labels */
+			if (labels_seen >= MAX_LABELS - 1)
+				return -1;
+			if (need_dot) {
+				if (written >= out_cap)
+					return -1;
+				out[written] = '.';
+				if (n_dots < MAX_LABELS)
+					dots[n_dots++] = (__u8)written;
+				written++;
+			}
+			labels_seen++;
+			remaining = b;
+			need_dot = 1;
+		} else {
+			/* content byte */
 			if (written >= out_cap)
 				return -1;
-			out[written] = '.';
-			if (n_dots < MAX_LABELS)
-				dots[n_dots++] = (__u8)written;
-			written++;
-		}
-		#pragma unroll
-		for (int j = 0; j < 63; j++) {
-			if ((__u32)j >= ll)
-				break;
-			if ((void *)(p + 1) > data_end)
-				return -1;
-			if (written >= out_cap)
-				return -1;
-			__u8 c = *p++;
+			__u8 c = b;
 			if (c >= 'A' && c <= 'Z')
 				c += 32;
 			out[written++] = (char)c;
+			remaining--;
 		}
 	}
-	/* Ran out of labels without seeing terminator -> malformed. */
+	/* Ran past MAX_QNAME without seeing a terminator -> malformed. */
 	return -1;
 }
 
