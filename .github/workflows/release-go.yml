@@ -106,10 +106,18 @@ jobs:
       - uses: docker/setup-buildx-action@v3
 
       - name: goreleaser
+        # --skip=validate suppresses goreleaser's "dirty git" check. The
+        # dirty files are expected build artifacts: the regen step
+        # rewrites bpf/vmlinux.h with the runner's BTF dump, and bpf2go
+        # rewrites internal/loader/adblocker_bpfel.go with the real
+        # binding. Both must run BEFORE goreleaser (the kernel object
+        # gets embedded into the Go binary via go:embed), so they're
+        # always dirty at this point. We trust the pipeline; the source
+        # tree is at the tagged commit.
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
-          args: release --clean ${{ github.event_name == 'workflow_dispatch' && '--snapshot' || '' }}
+          args: release --clean --skip=validate ${{ github.event_name == 'workflow_dispatch' && '--snapshot' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
