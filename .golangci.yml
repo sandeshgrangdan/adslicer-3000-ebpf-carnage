@@ -46,3 +46,5 @@ issues:
         - revive
         - gosec
         - staticcheck
+        - gofmt
+        - goimports

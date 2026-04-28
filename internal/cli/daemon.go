@@ -13,11 +13,11 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cilium/ebpf"
-	"github.com/cilium/ebpf/ringbuf"
 	"github.com/adblocker/adblocker/internal/hash"
 	"github.com/adblocker/adblocker/internal/lists"
 	"github.com/adblocker/adblocker/internal/loader"
+	"github.com/cilium/ebpf"
+	"github.com/cilium/ebpf/ringbuf"
 	"github.com/spf13/cobra"
 )
 

@@ -74,7 +74,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            clang llvm libbpf-dev bpftool make
+            clang llvm libbpf-dev make
+          # bpftool is only used to regenerate vmlinux.h from runner BTF;
+          # if the package isn't available on this runner image we fall
+          # back to the checked-in placeholder in the regen step.
+          sudo apt-get install -y --no-install-recommends bpftool \
+            || echo "warn: bpftool unavailable; regen step will use checked-in vmlinux.h"
           clang --version
           llvm-strip --version
           bpftool version || true

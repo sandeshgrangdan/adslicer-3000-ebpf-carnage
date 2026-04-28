@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cilium/ebpf"
 	"github.com/adblocker/adblocker/internal/hash"
 	"github.com/adblocker/adblocker/internal/lists"
 	"github.com/adblocker/adblocker/internal/loader"
+	"github.com/cilium/ebpf"
 	"github.com/spf13/cobra"
 )
 

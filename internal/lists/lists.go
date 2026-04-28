@@ -17,9 +17,9 @@ import (
 )
 
 const (
-	UserAgent     = "adblocker/1.0"
-	FetchTimeout  = 30 * time.Second
-	MaxBodyBytes  = 64 << 20 // 64 MiB
+	UserAgent    = "adblocker/1.0"
+	FetchTimeout = 30 * time.Second
+	MaxBodyBytes = 64 << 20 // 64 MiB
 )
 
 // Format names what kind of list a Source contains.
@@ -59,12 +59,12 @@ var adblockRe = regexp.MustCompile(
 )
 
 var hostsSkip = map[string]struct{}{
-	"localhost":      {},
+	"localhost":             {},
 	"localhost.localdomain": {},
-	"local":          {},
-	"broadcasthost":  {},
-	"ip6-localhost":  {},
-	"ip6-loopback":   {},
+	"local":                 {},
+	"broadcasthost":         {},
+	"ip6-localhost":         {},
+	"ip6-loopback":          {},
 }
 
 // ValidDomain reports whether s passes the strict regex check after

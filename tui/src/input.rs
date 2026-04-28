@@ -70,43 +70,37 @@ pub fn handle_normal(app: &mut App, k: KeyEvent) {
             app.status = "type a domain for TEMP-BLOCK, Enter, Esc to cancel".into();
         }
 
-        (KeyCode::Char('d'), _) | (KeyCode::Delete, _) | (KeyCode::Char('U'), _) => {
+        (KeyCode::Char('d'), _) | (KeyCode::Delete, _) | (KeyCode::Char('U'), _)
+            if app.view == View::Blocklist =>
+        {
             // We can only unblock by cleartext domain - the kernel map is keyed
             // on the FNV-1a hash of the lowercased name, which is one-way. So
             // we prompt the user for the name to unblock; the highlighted row
             // is informational only.
-            if app.view == View::Blocklist {
-                app.mode = InputMode::EditingUnblock;
-                app.edit_buffer.clear();
-                if let Some(e) = app.blocklist.get(app.blocklist_cursor) {
-                    app.status = format!(
-                        "type cleartext name to UNBLOCK (highlighted hash: {:016x}), Enter to confirm",
-                        e.hash
-                    );
-                } else {
-                    app.status = "type cleartext name to UNBLOCK, Enter to confirm".into();
-                }
+            app.mode = InputMode::EditingUnblock;
+            app.edit_buffer.clear();
+            if let Some(e) = app.blocklist.get(app.blocklist_cursor) {
+                app.status = format!(
+                    "type cleartext name to UNBLOCK (highlighted hash: {:016x}), Enter to confirm",
+                    e.hash
+                );
+            } else {
+                app.status = "type cleartext name to UNBLOCK, Enter to confirm".into();
             }
         }
 
         (KeyCode::Up, _) | (KeyCode::Char('k'), _) => match app.view {
-            View::Blocklist => {
-                if app.blocklist_cursor > 0 {
-                    app.blocklist_cursor -= 1;
-                }
+            View::Blocklist if app.blocklist_cursor > 0 => {
+                app.blocklist_cursor -= 1;
             }
-            View::Allowlist => {
-                if app.allowlist_cursor > 0 {
-                    app.allowlist_cursor -= 1;
-                }
+            View::Allowlist if app.allowlist_cursor > 0 => {
+                app.allowlist_cursor -= 1;
             }
             _ => {}
         },
         (KeyCode::Down, _) | (KeyCode::Char('j'), _) => match app.view {
-            View::Blocklist => {
-                if app.blocklist_cursor + 1 < app.blocklist.len() {
-                    app.blocklist_cursor += 1;
-                }
+            View::Blocklist if app.blocklist_cursor + 1 < app.blocklist.len() => {
+                app.blocklist_cursor += 1;
             }
             View::Allowlist => {
                 app.allowlist_cursor += 1;
