@@ -122,7 +122,7 @@ docker run --rm --privileged --network=host \
 
 > **Container caveat**: BPF programs need access to the host's
 > network namespaces and `/sys/fs/bpf`. There's no way to sandbox
-> them away — `--privileged` (or fine-grained CAP_BPF +
+> them away — `--privileged` (or fine-grained CAP_BPF + CAP_PERFMON +
 > CAP_NET_ADMIN + bind mounts) is unavoidable.
 
 ### 2d. **Build from source**
@@ -407,8 +407,8 @@ If a host is destroyed, recovery is: install package → restore
 The shipped systemd unit is already tight:
 
 ```ini
-AmbientCapabilities=CAP_BPF CAP_NET_ADMIN CAP_SYS_RESOURCE
-CapabilityBoundingSet=CAP_BPF CAP_NET_ADMIN CAP_SYS_RESOURCE
+AmbientCapabilities=CAP_BPF CAP_PERFMON CAP_NET_ADMIN CAP_SYS_RESOURCE
+CapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_NET_ADMIN CAP_SYS_RESOURCE
 NoNewPrivileges=true
 ProtectSystem=strict
 ReadWritePaths=/sys/fs/bpf
@@ -437,8 +437,9 @@ DeviceAllow=
 
 ### CLI access control
 
-`adblockerctl block`/`unblock`/etc. need `CAP_BPF` to talk to the
-pinned maps. Don't let unprivileged users have it. The clean
+`adblockerctl block`/`unblock`/etc. need `CAP_BPF` (and `CAP_PERFMON`
+for any subcommand that re-loads the program) to talk to the pinned
+maps. Don't let unprivileged users have those caps. The clean
 approach:
 
 ```sh
@@ -511,7 +512,8 @@ Common causes, in order of likelihood:
 | `failed to load BPF objects: ... operation not supported`     | kernel too old or no BTF. Need 5.15+ with `CONFIG_DEBUG_INFO_BTF=y`. |
 | `verifier rejected program: ...`                              | the kernel changed an internal type and CO-RE relocations failed. Re-run `make vmlinux && make` against the running kernel; if you're on a release binary, file an issue. |
 | `attach tc egress on eth0: file exists`                       | a previous incarnation didn't clean up. `tc qdisc del dev eth0 clsact` on the iface. |
-| `attach tc egress on eth0: permission denied`                 | not running with `CAP_BPF + CAP_NET_ADMIN`. Check the unit's `AmbientCapabilities`. |
+| `attach tc egress on eth0: permission denied`                 | not running with `CAP_BPF + CAP_PERFMON + CAP_NET_ADMIN`. Check the unit's `AmbientCapabilities`. |
+| `verifier rejected program: ... prohibited for !root`         | unit is missing `CAP_PERFMON`. The verifier treats anything without it as `!root` for pointer-ALU on Linux 5.8+. Add `CAP_PERFMON` to `AmbientCapabilities` and `CapabilityBoundingSet`. |
 | `mkdir pin dir /sys/fs/bpf/adblocker: no such file or directory` | bpffs isn't mounted. `mount -t bpf bpf /sys/fs/bpf`. Add to `/etc/fstab`. |
 
 ### Some traffic still gets through

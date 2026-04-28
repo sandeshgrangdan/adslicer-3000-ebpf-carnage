@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `systemd/adblocker.service` now grants `CAP_PERFMON` in addition to
+  `CAP_BPF`, `CAP_NET_ADMIN`, and `CAP_SYS_RESOURCE`. Without
+  `CAP_PERFMON` the kernel verifier on Linux 5.8+ treats the loader
+  as unprivileged for pointer-ALU checks and rejects the program with
+  `pointer arithmetic with it prohibited for !root`, even at UID 0.
+  Surfaces as `adblocker.service: Failed with result 'exit-code'` on
+  `systemctl start adblocker` (reported on Ubuntu 24).
+
+## [0.1.0] — 2026-04-27
+
 ### Added
 
 - Initial public release.
@@ -29,8 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ratatui TUI (`adblocker-tui`) with four views (Dashboard / Blocklist /
   Allowlist / Events), shells out to `adblockerctl`, supports
   `--ssh user@host` for remote management from macOS.
-- systemd unit with `CAP_BPF + CAP_NET_ADMIN`, `ProtectSystem=strict`,
-  `ReadWritePaths=/sys/fs/bpf`.
+- systemd unit with `CAP_BPF + CAP_NET_ADMIN + CAP_SYS_RESOURCE`,
+  `ProtectSystem=strict`, `ReadWritePaths=/sys/fs/bpf`. (`CAP_PERFMON`
+  added in [Unreleased]; v0.1.0 itself ships without it.)
 - Docs: `README.md`, `docs/INSTALL.md`, `docs/TUI.md`,
   `docs/ARCHITECTURE.md`, `docs/PRODUCTION.md`, `docs/RELEASING.md`.
 - CI: GitHub Actions for build + test + lint + security scans (CodeQL,
@@ -39,4 +52,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `.deb` + `.rpm` + GHCR container image; Rust TUI built for
   `linux/{amd64,arm64}` + `darwin/{amd64,arm64}`.
 
-[Unreleased]: https://github.com/adblocker/adblocker/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/releases/tag/v0.1.0

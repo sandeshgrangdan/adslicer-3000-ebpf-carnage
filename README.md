@@ -43,7 +43,7 @@ verifier.
 
 - Linux **5.15+** (BTF + ring buffer)
 - `clang`, `bpftool`, `make`, Go **1.21+**
-- `CAP_BPF` and `CAP_NET_ADMIN` (the systemd unit grants these)
+- `CAP_BPF`, `CAP_PERFMON`, `CAP_NET_ADMIN`, `CAP_SYS_RESOURCE` (the systemd unit grants these). `CAP_PERFMON` is required so the kernel verifier accepts the program's pointer arithmetic on Linux 5.8+.
 
 ## Docs
 

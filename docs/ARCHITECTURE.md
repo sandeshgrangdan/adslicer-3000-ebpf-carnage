@@ -985,8 +985,11 @@ What this project is and isn't.
   lets a BPF object built against today's kernel BTF run on
   yesterday's and tomorrow's kernels by relocating field offsets at
   load time.
-- **CAP_BPF / CAP_NET_ADMIN** — Linux capabilities the daemon
-  needs. Granted by the systemd unit's `AmbientCapabilities`.
+- **CAP_BPF / CAP_PERFMON / CAP_NET_ADMIN / CAP_SYS_RESOURCE** —
+  Linux capabilities the daemon needs. Granted by the systemd unit's
+  `AmbientCapabilities`. `CAP_PERFMON` is what the verifier checks
+  to allow the program's pointer arithmetic on Linux 5.8+ — without
+  it the load fails with "prohibited for !root" even at UID 0.
 - **FNV-1a 64** — Fowler-Noll-Vo hash, 64-bit, "alternate" variant.
   Cheap, deterministic, byte-for-byte identical between our kernel
   and Go implementations.

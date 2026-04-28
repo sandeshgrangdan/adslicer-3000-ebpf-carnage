@@ -32,7 +32,7 @@ This guide covers:
 | `bpftool`                           | dumps kernel BTF into `bpf/vmlinux.h`               |
 | `make`                              | runs the Makefile targets                           |
 | Go **1.21+**                        | builds the user-space binary                        |
-| `CAP_BPF` + `CAP_NET_ADMIN`         | runtime capabilities (the systemd unit grants them) |
+| `CAP_BPF` + `CAP_PERFMON` + `CAP_NET_ADMIN` + `CAP_SYS_RESOURCE` | runtime capabilities (the systemd unit grants them). `CAP_PERFMON` is what unlocks the verifier's pointer-arithmetic checks on Linux 5.8+. |
 
 Verify BTF is available:
 
@@ -383,8 +383,26 @@ make
 
 ### `attach tc egress on eth0: ... permission denied`
 
-The daemon needs `CAP_BPF` and `CAP_NET_ADMIN`. The systemd unit grants
-both. If you're running by hand, use `sudo` or run as root.
+The daemon needs `CAP_BPF`, `CAP_PERFMON`, `CAP_NET_ADMIN`, and
+`CAP_SYS_RESOURCE`. The systemd unit grants all four. If you're
+running by hand, use `sudo` or run as root.
+
+### `verifier rejected program: ... pointer arithmetic with it prohibited for !root`
+
+Despite the message, this isn't a UID issue — the kernel verifier
+treats anything without **`CAP_PERFMON`** as `!root` for relaxed
+pointer-ALU checks (Linux 5.8+). If you see this on `systemctl start
+adblocker`, your unit file is missing `CAP_PERFMON` from
+`AmbientCapabilities` / `CapabilityBoundingSet`. Either upgrade to a
+package that includes the fix, or `systemctl edit adblocker` and add:
+
+```ini
+[Service]
+AmbientCapabilities=CAP_BPF CAP_PERFMON CAP_NET_ADMIN CAP_SYS_RESOURCE
+CapabilityBoundingSet=CAP_BPF CAP_PERFMON CAP_NET_ADMIN CAP_SYS_RESOURCE
+```
+
+Then `systemctl daemon-reload && systemctl restart adblocker`.
 
 ### Some traffic still gets through
 

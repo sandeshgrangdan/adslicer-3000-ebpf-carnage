@@ -38,7 +38,8 @@ pub struct Args {
     pub adblockerctl: String,
 
     /// Don't prefix `adblockerctl` invocations with `sudo`. By default
-    /// we use sudo because the BPF maps need CAP_BPF; pass --no-sudo
+    /// we use sudo because the BPF maps need CAP_BPF (and CAP_PERFMON
+    /// for any subcommand that touches the verifier); pass --no-sudo
     /// if you're already root or have configured a polkit rule.
     #[arg(long, default_value_t = false)]
     pub no_sudo: bool,
