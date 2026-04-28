@@ -84,21 +84,33 @@ jobs:
 
       - name: regenerate vmlinux.h from runner kernel BTF
         run: |
-          if [ -r /sys/kernel/btf/vmlinux ] && command -v bpftool >/dev/null 2>&1; then
-            if sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > bpf/vmlinux.h.new 2>/dev/null \
-                 && [ -s bpf/vmlinux.h.new ]; then
-              mv bpf/vmlinux.h.new bpf/vmlinux.h
-              head -3 bpf/vmlinux.h
-            else
-              rm -f bpf/vmlinux.h.new
-              echo "NOTE: BTF dump produced no output; using checked-in placeholder vmlinux.h"
-            fi
-          else
-            echo "NOTE: bpftool/BTF unavailable on runner; using checked-in placeholder vmlinux.h"
+          set -eu
+          echo "uname: $(uname -a)"
+          ls -l /sys/kernel/btf/vmlinux || true
+          bpftool version
+          if [ ! -r /sys/kernel/btf/vmlinux ]; then
+            echo "::warning::no /sys/kernel/btf/vmlinux on this runner; using checked-in placeholder"
+            exit 0
           fi
+          # Stderr is intentionally NOT redirected: any bpftool warning/error
+          # must reach the CI log so we can diagnose regressions.
+          sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > bpf/vmlinux.h.new
+          if [ ! -s bpf/vmlinux.h.new ]; then
+            echo "::error::bpftool produced an empty vmlinux.h dump"
+            rm -f bpf/vmlinux.h.new
+            exit 1
+          fi
+          mv bpf/vmlinux.h.new bpf/vmlinux.h
+          echo "bpf/vmlinux.h size: $(wc -c < bpf/vmlinux.h) bytes"
+          head -3 bpf/vmlinux.h
 
       - name: bpf2go compile
         run: |
+          set -eu
+          # Diagnostics: anything that could surprise a future debugger.
+          echo "vmlinux.h size: $(wc -c < bpf/vmlinux.h) bytes"
+          head -3 bpf/vmlinux.h
+          clang --version | head -1
           # Fail loudly if the regen step left the PLACEHOLDER vmlinux.h in
           # place. clang would fail later with cryptic "unknown type" errors;
           # this turns that into a one-line, obvious failure.
