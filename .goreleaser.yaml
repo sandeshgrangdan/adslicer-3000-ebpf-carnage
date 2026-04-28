@@ -64,7 +64,7 @@ nfpms:
   - id: pkgs
     package_name: adblocker
     vendor: adblocker contributors
-    homepage: https://github.com/adblocker/adblocker
+    homepage: https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage
     maintainer: adblocker contributors <noreply@example.com>
     description: |
       System-wide eBPF ad/tracker blocker for Linux.
@@ -107,15 +107,15 @@ dockers:
     goos: linux
     goarch: amd64
     image_templates:
-      - "ghcr.io/adblocker/adblocker:{{ .Version }}-amd64"
-      - "ghcr.io/adblocker/adblocker:latest-amd64"
-    dockerfile: Dockerfile
+      - "ghcr.io/sandeshgrangdan/adblocker:{{ .Version }}-amd64"
+      - "ghcr.io/sandeshgrangdan/adblocker:latest-amd64"
+    dockerfile: Dockerfile.goreleaser
     build_flag_templates:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description=System-wide eBPF ad/tracker blocker"
-      - "--label=org.opencontainers.image.url=https://github.com/adblocker/adblocker"
-      - "--label=org.opencontainers.image.source=https://github.com/adblocker/adblocker"
+      - "--label=org.opencontainers.image.url=https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage"
+      - "--label=org.opencontainers.image.source=https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=MIT"
@@ -131,9 +131,9 @@ dockers:
     goos: linux
     goarch: arm64
     image_templates:
-      - "ghcr.io/adblocker/adblocker:{{ .Version }}-arm64"
-      - "ghcr.io/adblocker/adblocker:latest-arm64"
-    dockerfile: Dockerfile
+      - "ghcr.io/sandeshgrangdan/adblocker:{{ .Version }}-arm64"
+      - "ghcr.io/sandeshgrangdan/adblocker:latest-arm64"
+    dockerfile: Dockerfile.goreleaser
     build_flag_templates:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
@@ -146,27 +146,25 @@ dockers:
       - LICENSE
 
 docker_manifests:
-  - name_template: "ghcr.io/adblocker/adblocker:{{ .Version }}"
+  - name_template: "ghcr.io/sandeshgrangdan/adblocker:{{ .Version }}"
     image_templates:
-      - "ghcr.io/adblocker/adblocker:{{ .Version }}-amd64"
-      - "ghcr.io/adblocker/adblocker:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/adblocker/adblocker:latest"
+      - "ghcr.io/sandeshgrangdan/adblocker:{{ .Version }}-amd64"
+      - "ghcr.io/sandeshgrangdan/adblocker:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/sandeshgrangdan/adblocker:latest"
     image_templates:
-      - "ghcr.io/adblocker/adblocker:latest-amd64"
-      - "ghcr.io/adblocker/adblocker:latest-arm64"
+      - "ghcr.io/sandeshgrangdan/adblocker:latest-amd64"
+      - "ghcr.io/sandeshgrangdan/adblocker:latest-arm64"
 
 release:
-  github:
-    owner: adblocker
-    name: adblocker
+  # `github.owner` / `github.name` are auto-detected from `git remote`.
   draft: false
   prerelease: auto
   mode: replace
   header: |
     ## adblocker {{ .Tag }}
 
-    See [CHANGELOG.md](https://github.com/adblocker/adblocker/blob/{{ .Tag }}/CHANGELOG.md)
-    for details. Install instructions: [docs/INSTALL.md](https://github.com/adblocker/adblocker/blob/{{ .Tag }}/docs/INSTALL.md).
+    See [CHANGELOG.md](https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/blob/{{ .Tag }}/CHANGELOG.md)
+    for details. Install instructions: [docs/INSTALL.md](https://github.com/sandeshgrangdan/adslicer-3000-ebpf-carnage/blob/{{ .Tag }}/docs/INSTALL.md).
   footer: |
     ---
-    Container image: `ghcr.io/adblocker/adblocker:{{ .Tag }}`
+    Container image: `ghcr.io/sandeshgrangdan/adblocker:{{ .Tag }}`

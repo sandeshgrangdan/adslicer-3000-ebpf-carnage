@@ -1,0 +1,24 @@
+# Runtime-only Dockerfile for goreleaser builds.
+#
+# Goreleaser produces the `adblockerctl` binary on the host and assembles
+# the docker build context from {built binary, archives.files, extra_files}.
+# This image just copies what's already there and sets the entrypoint;
+# it never compiles anything.
+#
+# For local builds (which DO compile from source), use the multi-stage
+# `Dockerfile` at the repo root.
+
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY adblockerctl                 /usr/local/bin/adblockerctl
+COPY configs/adblocker.yaml       /etc/adblocker/adblocker.yaml
+COPY configs/allowlist.txt        /etc/adblocker/allowlist.txt
+COPY systemd/adblocker.service    /lib/systemd/system/adblocker.service
+COPY LICENSE                      /usr/share/doc/adblocker/LICENSE
+
+ENTRYPOINT ["/usr/local/bin/adblockerctl"]
+CMD ["daemon", "--config", "/etc/adblocker/adblocker.yaml"]
