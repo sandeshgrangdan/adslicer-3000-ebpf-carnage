@@ -74,15 +74,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            clang llvm libbpf-dev make
-          # bpftool is only used to regenerate vmlinux.h from runner BTF;
-          # if the package isn't available on this runner image we fall
-          # back to the checked-in placeholder in the regen step.
-          sudo apt-get install -y --no-install-recommends bpftool \
-            || echo "warn: bpftool unavailable; regen step will use checked-in vmlinux.h"
+            clang llvm libbpf-dev bpftool make
           clang --version
           llvm-strip --version
-          bpftool version || true
+          bpftool version
 
       - name: install bpf2go
         run: go install github.com/cilium/ebpf/cmd/bpf2go@latest
@@ -104,6 +99,13 @@ jobs:
 
       - name: bpf2go compile
         run: |
+          # Fail loudly if the regen step left the PLACEHOLDER vmlinux.h in
+          # place. clang would fail later with cryptic "unknown type" errors;
+          # this turns that into a one-line, obvious failure.
+          if grep -q "PLACEHOLDER" bpf/vmlinux.h; then
+            echo "::error::bpf/vmlinux.h is the checked-in placeholder; bpftool BTF dump must run before bpf2go compile"
+            exit 1
+          fi
           export PATH="$(go env GOPATH)/bin:$PATH"
           go generate ./...
 

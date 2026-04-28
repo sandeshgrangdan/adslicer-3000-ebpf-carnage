@@ -9,3 +9,7 @@ MD024:
   siblings_only: true
 # Allow ordered list items to all use 1.
 MD029: false
+# Tab-indented Go/Rust/shell snippets are valid in fenced code; only flag
+# tabs in prose.
+MD010:
+  code_blocks: false

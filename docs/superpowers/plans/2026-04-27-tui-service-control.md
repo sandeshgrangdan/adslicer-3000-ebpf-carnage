@@ -36,6 +36,7 @@
 ## Task 1: Loader state file (write/remove helpers + tests)
 
 **Files:**
+
 - Create: `internal/loader/state.go`
 - Create: `internal/loader/state_test.go`
 
@@ -201,6 +202,7 @@ git commit -m "feat(loader): state file write/remove helpers"
 ## Task 2: Wire state file into `loader.New` / `loader.Close`
 
 **Files:**
+
 - Modify: `internal/loader/loader.go:103-145` (the attach loop and Close)
 
 - [ ] **Step 1: Edit `loader.go` `New` to track names + write state**
@@ -290,6 +292,7 @@ git commit -m "feat(loader): publish state.json on attach, remove on close"
 ## Task 3: `adblockerctl status` subcommand (pure helper + tests)
 
 **Files:**
+
 - Create: `internal/cli/status.go`
 - Create: `internal/cli/status_test.go`
 
@@ -559,6 +562,7 @@ git commit -m "feat(cli): adblockerctl status subcommand"
 ## Task 4: Register `status` in the cobra root
 
 **Files:**
+
 - Modify: `internal/cli/cli.go:33-42`
 
 - [ ] **Step 1: Edit `cli.go` to register the new command**
@@ -621,6 +625,7 @@ git commit -m "feat(cli): wire status subcommand into root"
 ## Task 5: systemd unit `RuntimeDirectory`
 
 **Files:**
+
 - Modify: `systemd/adblocker.service`
 
 - [ ] **Step 1: Edit the unit**
@@ -665,6 +670,7 @@ git commit -m "feat(systemd): RuntimeDirectory=adblocker for state.json"
 ## Task 6: TUI — add `serde_json` and `ServiceStatus`
 
 **Files:**
+
 - Modify: `tui/Cargo.toml`
 - Modify: `tui/src/backend.rs`
 
@@ -829,6 +835,7 @@ git commit -m "feat(tui): ServiceStatus + service_status/start/stop backend meth
 ## Task 7: TUI app state — `ServiceAction`, `ConfirmService` mode, polling
 
 **Files:**
+
 - Modify: `tui/src/app.rs`
 
 - [ ] **Step 1: Add the new enum and mode variant**
@@ -980,6 +987,7 @@ git commit -m "feat(tui): App.service field, ConfirmService mode, ServiceAction 
 ## Task 8: TUI input — `[s]` toggle + confirm handler
 
 **Files:**
+
 - Modify: `tui/src/input.rs`
 
 - [ ] **Step 1: Import the new types**
@@ -1070,6 +1078,7 @@ git commit -m "feat(tui): [s] key toggles service via confirm prompt"
 ## Task 9: TUI UI — service panel + help/footer text
 
 **Files:**
+
 - Modify: `tui/src/ui.rs`
 
 - [ ] **Step 1: Add a service panel inside the Dashboard right column**
@@ -1279,6 +1288,7 @@ git commit -m "feat(tui): service panel on Dashboard + confirm prompt + help"
 ## Task 10: Documentation updates
 
 **Files:**
+
 - Modify: `docs/TUI.md`
 - Modify: `docs/ARCHITECTURE.md`
 
@@ -1311,7 +1321,7 @@ The Dashboard's **service** panel shows the live attached interfaces:
 
 Append a new section before the "TUI ↔ CLI" section (around the existing line `## 11. TUI ↔ CLI`). Insert this section as `## 10b. Daemon state file` (or just `## 10b.` between current 10 and 11, renumbering only if conventions require — this project numbers sections, but keep the lift small):
 
-```markdown
+````markdown
 ## Daemon state file
 
 The daemon publishes a tiny JSON document on every successful attach so
@@ -1333,7 +1343,7 @@ and removed by `Loader.Close()` on `SIGINT`/`SIGTERM`.
 (`RuntimeDirectory=adblocker` in the unit) and as a fallback by
 `os.MkdirAll` in the daemon — non-systemd direct-launch workflows still
 get a usable state file.
-```
+````
 
 - [ ] **Step 3: Run markdownlint to make sure the changes pass CI**
 
@@ -1376,6 +1386,7 @@ Expected: both binaries produced without errors.
 ```
 
 Expected:
+
 ```text
 status:  stopped
 {"running":false}
