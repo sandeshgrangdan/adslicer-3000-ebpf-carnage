@@ -72,9 +72,21 @@ jobs:
 
       - name: install BPF toolchain
         run: |
+          set -eu
           sudo apt-get update
+          # `bpftool` on Ubuntu 24.04 is a virtual package; its /usr/sbin
+          # wrapper only resolves /usr/lib/linux-tools/$(uname -r)/bpftool,
+          # which on Azure-flavored runner kernels doesn't ship. Install the
+          # generic-kernel tools and symlink the binary directly to PATH so
+          # we bypass the wrapper.
           sudo apt-get install -y --no-install-recommends \
-            clang llvm libbpf-dev bpftool make
+            clang llvm libbpf-dev linux-tools-common linux-tools-generic make
+          GENERIC_BPFTOOL="$(ls -1 /usr/lib/linux-tools/*/bpftool 2>/dev/null | head -1)"
+          if [ -z "$GENERIC_BPFTOOL" ]; then
+            echo "::error::no bpftool binary under /usr/lib/linux-tools/*"
+            exit 1
+          fi
+          sudo ln -sf "$GENERIC_BPFTOOL" /usr/local/bin/bpftool
           clang --version
           llvm-strip --version
           bpftool version
