@@ -59,11 +59,15 @@ static __always_inline void emit_event(__u8 reason, __u64 dh,
 	e->reason      = reason;
 	__builtin_memset(e->_pad, 0, sizeof(e->_pad));
 	__builtin_memset(e->qname, 0, sizeof(e->qname));
+	/* The volatile cast on the source defeats clang -O2's idiom
+	 * recognizer, which would otherwise lower this byte loop to a
+	 * call to __builtin_memcpy. The BPF target has no libc to link
+	 * memcpy from, so that lowering breaks the build. */
 	#pragma unroll
 	for (int i = 0; i < MAX_QNAME; i++) {
 		if ((__u32)i >= qlen)
 			break;
-		e->qname[i] = qname[i];
+		e->qname[i] = ((const volatile char *)qname)[i];
 	}
 	bpf_ringbuf_submit(e, 0);
 }
