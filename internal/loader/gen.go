@@ -7,4 +7,10 @@
 // adblocker_bpfel.go bindings.
 package loader
 
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc clang -target bpfel -cflags "-O2 -g -Wall -Werror -I../../bpf" adblocker ../../bpf/adblocker.bpf.c
+// -Wno-pass-failed silences clang's "loop not unrolled" warnings when
+// the optimizer can't honor a `#pragma unroll` hint. The loops are
+// still bounded with explicit `break`s; modern BPF verifiers handle
+// bounded loops natively. Without -Wno-pass-failed, -Werror promotes
+// these advisory warnings into hard build failures (clang 18+).
+//
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -cc clang -target bpfel -cflags "-O2 -g -Wall -Werror -Wno-pass-failed -I../../bpf" adblocker ../../bpf/adblocker.bpf.c
