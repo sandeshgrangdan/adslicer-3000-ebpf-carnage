@@ -36,6 +36,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unrolled loop counter (constant offset per iteration) and uses
   runtime `start`/`end` only to gate which iterations contribute.
   Hash output is byte-identical to the old form for any input.
+- `fnv1a_lower_substring` then **eliminated** in favour of computing
+  full-name + suffix hashes incrementally during `parse_qname`. The
+  substring API still hit the verifier's 1M-instruction complexity
+  budget on Linux 6.8 because each suffix triggered a fresh
+  128-iteration loop with three runtime conditionals. The new
+  shape maintains an array of parallel FNV-1a states (`hashes[0]`
+  full name, `hashes[1..]` progressively shorter suffixes) and
+  updates all of them with each output byte; the lookup loop
+  (`blocklist_lookup_hashes`) just iterates the precomputed values.
+  `MAX_LABELS` reduced from 8 to 4 to halve the inner unroll
+  width — caps suffix walk at 3 levels (full + 3 suffixes), which
+  covers every real domain we'd realistically block; deep
+  multi-label patterns like `a.b.c.d.e.example.co.uk` lose match
+  on the longest suffix only.
+- `bpf/parsers.h::read_be16(p)` helper added with an asm barrier and
+  an explicit `& 0xffff` mask. Without it clang elides the mask
+  (it can statically prove `(p[0]<<8)|p[1] <= 65535`) and the
+  kernel verifier loses scalar-bound tracking through the `|`,
+  rejecting any subsequent `pkt + result` with
+  `math between pkt pointer and register with unbounded min value`.
+  Used in `parse_sni`'s length-byte reads.
+- `parse_sni` (TLS ClientHello / SNI hostname extraction) is
+  **temporarily disabled** (returns `-1` early). The extension-walk
+  loop accumulates packet-pointer var_off across iterations and
+  the verifier on Linux 6.8 cannot prove subsequent in-bounds reads.
+  SNI blocking will be restored in the next minor release once the
+  parser is restructured around a per-cpu scratch map (variable
+  offsets are accepted on map-value reads where stack reads are
+  not). DNS blocking via `parse_qname` / `handle_dns` is unaffected.
 
 ## [0.1.0] — 2026-04-27
 

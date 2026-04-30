@@ -26,7 +26,7 @@
 #define STAT__MAX        7
 
 #define MAX_QNAME  128   /* DNS limit is 255 but most names < 128; kept small for verifier. */
-#define MAX_LABELS 8     /* Bound for the per-name label loop; suffix walk uses 6. */
+#define MAX_LABELS 4     /* Bound for the per-name parallel-hash array (full + up to 3 suffixes). */
 
 struct domain_entry {
 	__u8  flags;

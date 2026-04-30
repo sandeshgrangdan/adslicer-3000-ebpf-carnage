@@ -87,10 +87,10 @@ static __always_inline int handle_dns(struct __sk_buff *skb, void *l4,
 		return TC_ACT_OK;
 
 	char name[MAX_QNAME] = {};
-	__u8 dots[MAX_LABELS] = {};
-	__u32 n_dots = 0;
+	__u64 hashes[MAX_LABELS];
+	__u32 n_hashes = 0;
 
-	int nlen = parse_qname(qname_start, data_end, name, MAX_QNAME, dots, &n_dots);
+	int nlen = parse_qname(qname_start, data_end, name, MAX_QNAME, hashes, &n_hashes);
 	if (nlen <= 0)
 		return TC_ACT_OK;
 
@@ -98,7 +98,7 @@ static __always_inline int handle_dns(struct __sk_buff *skb, void *l4,
 
 	__u64 dh = 0;
 	struct domain_entry *de = NULL;
-	if (!blocklist_suffix_hit(name, (__u32)nlen, dots, n_dots, &dh, &de))
+	if (!blocklist_lookup_hashes(hashes, n_hashes, &dh, &de))
 		return TC_ACT_OK;
 
 	if (de->flags & FLAG_ALLOW)
@@ -126,9 +126,9 @@ static __always_inline int handle_tls(struct __sk_buff *skb, void *l4,
 		return TC_ACT_OK; /* not enough for a record header; nothing to do */
 
 	char name[MAX_QNAME] = {};
-	__u8 dots[MAX_LABELS] = {};
-	__u32 n_dots = 0;
-	int nlen = parse_sni(payload, data_end, name, MAX_QNAME, dots, &n_dots);
+	__u64 hashes[MAX_LABELS];
+	__u32 n_hashes = 0;
+	int nlen = parse_sni(payload, data_end, name, MAX_QNAME, hashes, &n_hashes);
 	if (nlen <= 0)
 		return TC_ACT_OK;
 
@@ -136,7 +136,7 @@ static __always_inline int handle_tls(struct __sk_buff *skb, void *l4,
 
 	__u64 dh = 0;
 	struct domain_entry *de = NULL;
-	if (!blocklist_suffix_hit(name, (__u32)nlen, dots, n_dots, &dh, &de))
+	if (!blocklist_lookup_hashes(hashes, n_hashes, &dh, &de))
 		return TC_ACT_OK;
 
 	if (de->flags & FLAG_ALLOW)
