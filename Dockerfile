@@ -16,7 +16,7 @@
 #     adblocker:dev daemon --config /etc/adblocker/adblocker.yaml
 
 # ---------- builder ----------
-FROM golang:1.22-bookworm AS builder
+FROM golang:1.26-bookworm AS builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         clang llvm libbpf-dev linux-headers-generic \
